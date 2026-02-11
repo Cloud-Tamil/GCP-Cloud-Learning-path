@@ -14,4 +14,4 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
 > **Roles**
  > > A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role. When you grant a role to a user, you grant them all the permissions that the role contains.
 
-    - [Google](https://cloud.google.com/iam/docs/overview#roles)
+- [Google](https://cloud.google.com/iam/docs/overview#roles)
