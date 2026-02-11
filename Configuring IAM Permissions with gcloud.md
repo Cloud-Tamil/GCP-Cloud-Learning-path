@@ -9,3 +9,4 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
 5 Cloud Identity domain
 6 All authenticated users
 7 All users
+[Google](https://cloud.google.com/iam/docs/overview#concepts_related_identity)
