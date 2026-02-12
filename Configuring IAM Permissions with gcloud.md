@@ -14,7 +14,7 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
 >  [!NOTE]
 >  A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role. When you grant a role to a user, you grant them all the permissions that the role contains. - [Google](https://cloud.google.com/iam/docs/overview#roles)
      
-**Task 1. Configure the gcloud environment**
+### Task 1. Configure the gcloud environment.
 1. Open the list of compute instances by going to Navigation Menu > Compute Engine > VM instances.
   
 2. On the line with the compute instance named centos-clean, click SSH.
@@ -70,7 +70,7 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
 > 2. The default configuration is stored in ~/.config/gcloud/configurations/config_default<br/>
 > 3. If you want to use a zone other than the default zone when creating an instance, you can use --zone switch. For example, gcloud compute instances create lab-1 --zone us-central1-f<br/>
   
-  **Task 2. Create and switch between multiple IAM configurations**
+### Task 2. Create and switch between multiple IAM configurations.
   
   - You have now set up one account. In situations when you need to work on different teams or access different accounts, you can also manage that with gcloud config.
   - In your next task you learn how to create a second configuration and switch between both of them.
@@ -121,7 +121,7 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
    ```
    gcloud config configurations activate default
    ```
-**Task 3. Identify and assign correct IAM permissions**
+### Task 3. Identify and assign correct IAM permissions.
 - You have been provided two user accounts for this project. The first user has complete control of both projects and can be thought of as the admin account. The second user has viewer only access to the two projects. Call the second user a devops user and that user identity represents a typical devops level user.
   
 <ins>***Examine roles and permissions***</ins>
@@ -134,3 +134,151 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
    ```
    gcloud iam roles describe roles/compute.instanceAdmin 
    ```
+<ins>***Grant access to the second user to the second project***</ins>
+- Next you attach the basic role of "viewer" to the second user onto the second project.
+   - To the user and an organization
+   - To a user and a project
+
+1. Switch gcloud configuration back to the second user (user2). Inside the SSH session run.
+   ```
+   gcloud config configurations activate user2
+   ```
+2. Now you're back to user2 --> Set PROJECTID2 to the second project. Inside the SSH session, run the following.
+   ```
+   echo "export PROJECTID2="PROJECT_ID"" >> ~/.bashrc
+
+   . ~/.bashrc
+   gcloud config set project $PROJECTID2
+   ```
+3. When prompted, Do you want to continue (Y/n)?, type N and press ENTER.
+    - This means that user 2 doesn't have access to the PROJECTID2 project, which you fix in the next section.
+      
+ <ins>***Assign the viewer role to the second user in the second project***</ins>
+ 1. Switch back to the default gcloud configuration, which has the permission to grant access to the second user. Inside the SSH session run.
+    ```
+    gcloud config configurations activate default
+    ```
+2. Install jq.
+   ```
+   sudo yum -y install epel-release
+   sudo yum -y install jq
+   ```
+3. Inside the SSH session, run the following.
+   ```
+   echo "export USERID2="Username2"" >> ~/.bashrc
+   . ~/.bashrc
+   gcloud projects add-iam-policy-binding $PROJECTID2 --member user:$USERID2 --role=roles/viewer
+   ```
+### Task 4. Test that user2 has access.
+1. Switch your gcloud configuration to user2. Inside the SSH session run.
+   ```
+   gcloud config configurations activate user2
+   ```
+2. Change the configuration for user2 to the second project. Inside the SSH session run.
+   ```
+   gcloud config set project $PROJECTID2
+   ```
+3. Verify you have viewer access. Inside the SSH session run.
+   ```
+   gcloud compute instances list
+   ```
+4. Try to create an instance in the second project as the second user. Inside the SSH session run.
+   ```
+   gcloud compute instances create lab-2 --zone "Zone2" --machine-type=e2-standard-2
+   ```
+5. Switch your gcloud configuration to default. Inside the SSH session run.
+   ```
+   gcloud config configurations activate default
+   ```
+<ins>***Create a new role with permissions***</ins>
+- Next, create the new role with the set of permissions needed for the devops team.
+1. Create a custom role called devops that has the permissions to create an instance. Inside the SSH session run.
+   ```
+   gcloud iam roles create devops --project $PROJECTID2 --permissions        compute.instances.create,compute.instances.delete,compute.instances.start,compute.instances.stop,compute.instances.update,compute.disks.create,compute.subnetworks.use,compute.subnetworks.useExternalIp,compute.instances.setMetadata,compute.instances.setServiceAccount"
+   ```
+   - The full name of the role is listed, note the role is in the project so the path is in the pattern of projects/PROJECT/roles/ROLENAME.
+     
+<ins>Bind the role to the second account to both projects</ins>
+- You now have the role created and need to bind the user and the role to the project. Use gcloud projects add-iam-policy-binding to perform the binding. To make this command easier to execute, set a couple of environment variables first; the project id and the user account.
+1. Bind the role of iam.serviceAccountUser to the second user onto the second project. Inside the SSH session run.
+   ```
+   gcloud projects add-iam-policy-binding $PROJECTID2 --member user:$USERID2 --role=roles/iam.serviceAccountUser
+   ```
+2. Bind the custom role devops to the second user onto the second project. You can find the second user account on the left of this page. Make sure you set USERID to the second user account.
+   ```
+   Inside the SSH session run
+   gcloud projects add-iam-policy-binding $PROJECTID2 --member user:$USERID2 --role=projects/$PROJECTID2/roles/devops
+   ```
+<ins>Test the newly assigned permissions.</ins>
+1. Switch your gcloud configuration to user2. Inside the SSH session run.
+   ```
+   gcloud config configurations activate user2
+   ```
+2. Try to create an instance called lab-2. Inside the SSH session run.
+   ```
+   gcloud compute instances create lab-2 --zone "Zone2" --machine-type=e2-standard-2
+   ```
+3. Verify the instance exists. Inside the SSH session run.
+   ```
+   gcloud compute instances list
+   ```
+   <img width="806" height="536" alt="image" src="https://github.com/user-attachments/assets/257b360c-2232-4060-92b7-782b9e8e2f99" />
+
+### Task 5. Using a service account
+- A Service Account in Google Cloud Platform (GCP) is a special type of identity that is used by applications, virtual machines, or services to interact with Google Cloud resources securely. Unlike normal Google accounts that represent human users, a service account represents a non-human entity. It allows automated systems to authenticate and perform actions without requiring a person to log in each time<br/>
+In simple terms, if a user account is for a person, a service account is for a machine.
+[google](https://cloud.google.com/iam/docs/service-accounts)
+
+<ins>***Create a service account***</ins>
+1. Switch your gcloud configuration to default, user2 doesn't have the rights to set up and configure service accounts. Inside the SSH session run.
+   ```
+   gcloud config configurations activate default
+   ```
+2. Set the project to PROJECTID2 in your configuration. Inside the SSH session run.
+   ```
+   gcloud config set project $PROJECTID2
+   ```
+3. Create the service account. Inside the SSH session run.
+   ```
+   gcloud iam service-accounts create devops --display-name devops
+   ```
+4. Get the service account email address. Inside the SSH session run.
+   ```
+   gcloud iam service-accounts list  --filter "displayName=devops"
+   ```
+5. Put the email address into a local variable called SA. Inside the SSH session run.
+   ```
+   SA=$(gcloud iam service-accounts list --format="value(email)" --filter "displayName=devops")
+   ```
+6. Give the service account the role of iam.serviceAccountUser. Inside the SSH session run.
+   ```
+   gcloud projects add-iam-policy-binding $PROJECTID2 --member serviceAccount:$SA --role=roles/iam.serviceAccountUser
+   ```
+### Task 6. Using the service account with a compute instance.
+1. Give the service account the role of compute.instanceAdmin. Inside the SSH session run.
+   ```
+   gcloud projects add-iam-policy-binding $PROJECTID2 --member serviceAccount:$SA --role=roles/compute.instanceAdmin
+   ```
+2. Create an instance with the devops service account attached. You also have to specify an access scope that defines the API calls that the instance can make. Inside the SSH session run.
+   ```
+   gcloud compute instances create lab-3 --zone "Zone2" --machine-type=e2-standard-2 --service-account $SA --scopes "https://www.googleapis.com/auth/compute"
+   ```
+### Task 7. Test the service account.
+1. Connect to the newly created instance using gcloud compute ssh. Inside the SSH session run.
+   ```
+   gcloud compute ssh lab-3 --zone "Zone2"
+   ```
+2. Press ENTER when asked if you want to continue --> Press ENTER twice to skip making a password.
+3. The default image used already contains gcloud configuration. Inside the SSH session run.
+   ```
+   gcloud config list
+   ```
+4. Create an instance. This tests that you have the necessary permissions via the service account.
+   ```
+   gcloud compute instances create lab-4 --zone "Zone2" --machine-type=e2-standard-2
+   ```
+5. Check roles attached are working. Inside the SSH session run.
+   ```
+   gcloud compute instances list
+   ```
+   <img width="801" height="534" alt="image" src="https://github.com/user-attachments/assets/4ee59b7d-8202-482f-b925-2f314b292300" />
