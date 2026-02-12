@@ -50,20 +50,20 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
      ```
      gcloud compute zones list
      ```
-  9. Identify one of the other zones in the same region as you. For example, if your current zone is us-west2-a, you could select us-west2-b.
- 10. Change your current zone for another zone in the same region. Inside the SSH session run the following, replacing ZONE with the zone you selected.
+   9. Identify one of the other zones in the same region as you. For example, if your current zone is us-west2-a, you could select us-west2-b.
+  10. Change your current zone for another zone in the same region. Inside the SSH session run the following, replacing ZONE with the zone you selected.
       ```
       gcloud config set compute/zone ZONE
       ```
- 11. Verify the zone change was made. Inside the SSH session run.
+  11. Verify the zone change was made. Inside the SSH session run.
      ```
      gcloud config list
      ```
      > [!NOTE]
      > You see the stated zone reflects the change you made.
 
-      You can change other settings using the gcloud config set command. Those changes are permanent; they are written to your home directory.
+     > You can change other settings using the gcloud config set command. Those changes are permanent; they are written to your home directory.
 
-      The default configuration is stored in ~/.config/gcloud/configurations/config_default.
+     > The default configuration is stored in ~/.config/gcloud/configurations/config_default.
 
-      If you want to use a zone other than the default zone when creating an instance, you can use --zone switch. For example, gcloud compute instances create lab-1 --zone us-central1-f
+     > If you want to use a zone other than the default zone when creating an instance, you can use --zone switch. For example, gcloud compute instances create lab-1 --zone us-central1-f
