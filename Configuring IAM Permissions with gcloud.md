@@ -1,5 +1,3 @@
-## 📂 Project Structure
-
 ### What is IAM?
 
 Google Cloud offers Cloud Identity and Access Management (IAM), which lets you manage access control by defining who has what access for which resource.
@@ -17,3 +15,6 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
  > > A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role. When you grant a role to a user, you grant them all the permissions that the role contains.
 
    - [Google](https://cloud.google.com/iam/docs/overview#roles)
+     
+**Task 1. Configure the gcloud environment**
+1. Open the list of compute instances by going to Navigation Menu > Compute Engine > VM instances.
