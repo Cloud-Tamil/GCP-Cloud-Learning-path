@@ -23,3 +23,5 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
    ```
    gcloud --version
    ```
+> [!NOTE]
+> Create a new instance and updating the default zone
