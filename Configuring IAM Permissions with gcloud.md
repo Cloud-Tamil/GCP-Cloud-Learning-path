@@ -18,3 +18,8 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
      
 **Task 1. Configure the gcloud environment**
 1. Open the list of compute instances by going to Navigation Menu > Compute Engine > VM instances.
+2. On the line with the compute instance named centos-clean, click SSH.
+3. First test, confirm that gcloud is successfully installed by checking the version. Inside the SSH session run.
+   ```
+   gcloud --version
+   ```
