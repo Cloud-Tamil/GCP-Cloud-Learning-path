@@ -1,23 +1,19 @@
-### What is IAM?
+### 🔐 What is IAM GCP?
 
-Google Cloud offers Cloud Identity and Access Management (IAM), which lets you manage access control by defining who has what access for which resource.
+Identity and Access Management in Google Cloud Platform is a service that helps you control who identity can do what role/permission on which resource - [Google](https://cloud.google.com/iam/docs/overview#concepts_related_identity)
 
-- Google Account
-- Service account
-- Google group
-- Google Workspace account
-- Cloud Identity domain
-- All authenticated users
-- All users - [Google](https://cloud.google.com/iam/docs/overview#concepts_related_identity)
+### 🔐 What is Roles in GCP?
 
-**Roles**
->  [!NOTE]
->  A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role. When you grant a role to a user, you grant them all the permissions that the role contains. - [Google](https://cloud.google.com/iam/docs/overview#roles)
+A role is a collection of permissions. You cannot assign a permission to the user directly; instead you grant them a role. When you grant a role to a user, you grant them all the permissions that the role contains. - [Google](https://cloud.google.com/iam/docs/overview#roles)
+
+### 🔐 What is a Permission in GCP?
+
+A permission in GCP is a single action that can be performed on a resource.
      
 ### Task 1. Configure the gcloud environment.
-1. Open the list of compute instances by going to Navigation Menu > Compute Engine > VM instances.
+1. Open the list of compute instances by going to Navigation Menu **> Compute Engine > VM instances**.
   
-2. On the line with the compute instance named centos-clean, click SSH.
+2. On the line with the compute instance named **centos-clean, click SSH**.
   
 3. First test, confirm that gcloud is successfully installed by checking the version. Inside the SSH session run.
    ```
@@ -33,7 +29,7 @@ Google Cloud offers Cloud Identity and Access Management (IAM), which lets you m
      ```
   2. Navigate to the link displayed in a new tab.
     
-  3. Click on your active username (), and click Allow.
+  3. Click on your active **username (), and click Allow**.
     
   4. When you see the prompt Enter the following verification code in gcloud CLI on the machine you want to log into, click on the copy button then go back to the SSH session, and paste the code into the prompt Enter authorization code.
     
