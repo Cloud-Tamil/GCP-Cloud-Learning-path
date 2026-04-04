@@ -8,11 +8,33 @@
   - How to verify high availability ha-vpn gateways
 <img width="1500" height="604" alt="image" src="https://github.com/user-attachments/assets/758c3730-b8f1-491b-897a-40d45f54f0c9" />
 
-## *Task 1. Cloud VPC setup* ##
-- Open Cloud Shell, create a vpc network called vpc-demo:
-   
-      '''
-      gcloud compute networks create vpc-demo --subnet-mode custom
-      '''
+## Task 1. Cloud VPC setup ##
+  - Create subnets
+  - Create firewall rules
+  - Create vm instances in network
+## Task 2. Simulate on-premises setup ##
+  - Create subnets
+  - Create firewall rules
+  - Create vm instances in network
+## Task 3. HA-VPN setup ##
+  - Create cloud routers
+  - Create two VPN tunnels
+  - Create bgp peering for each tunnel
+  - Verify router configurations
+  - Configure Firewall rules to allow traffic from the remote VPC
+  - Verify the status of the tunnels
+  - Verify private connectivity over VPN
+  - Global routing with VPN
+  - Verify high availability of tunnels
+## Task 4. Cleanup ##
+  - Delete VPN tunnels
+  - Remove BGP peering
+  - Delete cloud routers
+  - Delete VPN gateways
+  - Delete instances
+  - Delete firewall rules
+  - Delete subnets
+  - Delete VPC
+  - Delete VPC
     
     
