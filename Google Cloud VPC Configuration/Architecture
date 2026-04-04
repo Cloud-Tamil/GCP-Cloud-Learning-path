@@ -1,0 +1,11 @@
+VPC (vpc-demo)
+ ├── Subnet (europe-west4) → VM1
+ ├── Subnet (us-central1) → VM2
+ └── HA-VPN Gateway + Cloud Router
+
+VPC (on-prem)
+ ├── Subnet (europe-west4) → VM3
+ └── HA-VPN Gateway + Cloud Router
+
+🔗 2 VPN Tunnels (for HA)
+🔁 BGP Routing between routers
