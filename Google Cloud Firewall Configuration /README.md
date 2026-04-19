@@ -21,3 +21,22 @@ The goal is to move from **decentralized, VPC-level rules** to a **centralized f
 ## 🧠 Architecture
 
 ### 🔹 Before Migration
+
+VPC Network → Individual Firewall Rules
+
+### 🔹 After Migration
+
+Firewall Policy → Attached to VPC → Centralized Rule Management
+
+---
+
+## ⚙️ Prerequisites
+
+- Google Cloud Project  
+- Compute Engine API enabled  
+- Basic knowledge of:
+  - VPC Networks  
+  - Firewall Rules  
+  - gcloud CLI  
+
+---
