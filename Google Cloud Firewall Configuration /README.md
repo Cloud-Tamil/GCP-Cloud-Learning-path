@@ -3,6 +3,7 @@
 ## 📌 Overview
 
 We will demonstrates how to migrate traditional **VPC firewall rules** to **Cloud NGFW (Next-Generation Firewall) policies**.
+
 The goal is to move from **decentralized, VPC-level rules** to a **centralized firewall policy model**, improving scalability, security, and manageability.
 ---
 
