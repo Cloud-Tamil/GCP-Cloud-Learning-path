@@ -1,47 +1,23 @@
-# 🔐 Cloud NGFW: Migrate VPC Firewall Rules (Network-based)
+# **VPC Firewall Rules Migration to Cloud NGFW** 🔰 Project Title
 
 ## 📌 Overview
 
-We will demonstrates how to migrate traditional **VPC firewall rules** to **Cloud NGFW (Next-Generation Firewall) policies**.
-
-The goal is to move from **decentralized, VPC-level rules** to a **centralized firewall policy model**, improving scalability, security, and manageability.
-
+- This project demonstrates how legacy VPC firewall rules are migrated to Cloud NGFW (Next-Generation Firewall) using Global Network Firewall Policies and IAM-governed tags in Google Cloud.
 ---
 
-## 🎯 Objectives
-
-- Understand VPC firewall rule limitations  
-- Create a Network Firewall Policy  
-- Migrate existing firewall rules into the policy  
-- Associate the policy with a VPC network  
-- Validate traffic behavior after migration  
-
----
-
-## 🧠 Architecture
-
-<img width="1600" height="1600" alt="image" src="https://github.com/user-attachments/assets/83fde337-d770-4888-bd6f-76aeed14f5d3" />
-
-### 🔹 Before Migration
-
-VPC Network → Individual Firewall Rules
-
-### 🔹 After Migration
-
-Firewall Policy → Attached to VPC → Centralized Rule Management
+### 🔄 Migration Flow
+- Identify existing VPC firewall rules
+- Map rules to IAM-based tags
+- Create Global Network Firewall Policy
+- Define equivalent firewall rules
+- Attach tags to VM instances
+- Deploy Cloud NGFW policy
+- Validate connectivity and logs
 
 ---
+## 🧠 Diagram
 
-## ⚙️ Prerequisites
-
-- Google Cloud Project  
-- Compute Engine API enabled  
-- Basic knowledge of:
-  - VPC Networks  
-  - Firewall Rules  
-  - gcloud CLI  
-
----
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/0778b775-09ed-42c0-92fa-2b6cf106ddbd" />
 
 
 
