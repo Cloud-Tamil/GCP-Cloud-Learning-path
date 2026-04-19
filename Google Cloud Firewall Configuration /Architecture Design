@@ -1,0 +1,13 @@
+Internet
+   ↓
+[ Allow HTTP/HTTPS ]
+   ↓
+Web Tier (web)
+   ↓
+[ Allow App Port ]
+   ↓
+App Tier (app)
+   ↓
+[ Allow DB Port ]
+   ↓
+DB Tier (db)
