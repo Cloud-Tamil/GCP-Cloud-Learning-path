@@ -4,10 +4,10 @@
      
 - Run the following gcloud commands in Cloud Shell to set the default region&Zone for your lab       
 ```        
-gcloud config set compute/region "Region"
+gcloud config set compute/region "us-central1"
 export REGION=$(gcloud config get compute/region)
 
-gcloud config set compute/zone "Zone"
+gcloud config set compute/zone "us-central1-f"
 export ZONE=$(gcloud config get compute/zone)
 ```
 - Set your Project ID as an environment variable.
