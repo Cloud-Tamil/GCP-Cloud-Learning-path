@@ -4,7 +4,7 @@
 
 We will demonstrates how to migrate traditional **VPC firewall rules** to **Cloud NGFW (Next-Generation Firewall) policies**.
 
-The goal is to move from **decentralized, VPC-level rules** to a **centralized firewall policy model**, improving scalability, security, and manageability.\
+The goal is to move from **decentralized, VPC-level rules** to a **centralized firewall policy model**, improving scalability, security, and manageability.
 
 ---
 
@@ -19,6 +19,8 @@ The goal is to move from **decentralized, VPC-level rules** to a **centralized f
 ---
 
 ## 🧠 Architecture
+
+<img width="1600" height="1600" alt="image" src="https://github.com/user-attachments/assets/83fde337-d770-4888-bd6f-76aeed14f5d3" />
 
 ### 🔹 Before Migration
 
@@ -40,3 +42,6 @@ Firewall Policy → Attached to VPC → Centralized Rule Management
   - gcloud CLI  
 
 ---
+
+
+
