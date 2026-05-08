@@ -1,4 +1,5 @@
-# Google Cloud Storage — Implementation
+# Google Cloud Storage - Implementation
+
 ```
 User
   │
@@ -19,7 +20,7 @@ Bucket Name (task-12345)
 - In the Cloud console, go to **Navigation menu () > Cloud Storage > Buckets.**
 - Click **-->Create**
 - Name your bucket: Enter a **unique name** for your bucket.
-- Choose Region for Location type and us-central1 for Location.
+- Choose Region for Location type and **us-central1** for Location.
 - Choose **Standard** for Set a default class.
 - Choose **Uniform for Access control** and **uncheck Enforce public access** prevention on this bucket to turn it off.
   
