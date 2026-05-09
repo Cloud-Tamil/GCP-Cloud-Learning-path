@@ -27,44 +27,7 @@ You will create:
 
 ---
 
-# Architecture
-
-```text
-                    Internet
-                        │
-                        ▼
-                Load Balancer Service
-                        │
-                        ▼
-               GKE Cluster (griffin-dev)
-                        │
-        ┌───────────────┴───────────────┐
-        ▼                               ▼
- WordPress Pod                 Cloud SQL Proxy
-        │                               │
-        └───────────────┬───────────────┘
-                        ▼
-              Cloud SQL MySQL Instance
-                    griffin-dev-db
-
-Networks:
----------
-griffin-dev-vpc
- ├── griffin-dev-wp
- └── griffin-dev-mgmt
-
-griffin-prod-vpc
- ├── griffin-prod-wp
- └── griffin-prod-mgmt
-
-Bastion Host
- ├── Dev Mgmt NIC
- └── Prod Mgmt NIC
-```
-
----
-
-# Task 1 — Create Development VPC
+# Task 1 - Create Development VPC
 
 ## Create VPC
 
@@ -80,7 +43,7 @@ gcloud compute networks create griffin-dev-vpc \
 ```bash
 gcloud compute networks subnets create griffin-dev-wp \
     --network=griffin-dev-vpc \
-    --region=us-central1 \
+    --region=asia-south1 \
     --range=192.168.16.0/20
 ```
 
@@ -89,13 +52,13 @@ gcloud compute networks subnets create griffin-dev-wp \
 ```bash
 gcloud compute networks subnets create griffin-dev-mgmt \
     --network=griffin-dev-vpc \
-    --region=us-central1 \
+    --region=asia-south1 \
     --range=192.168.32.0/20
 ```
 
 ---
 
-# Task 2 — Create Production VPC
+# Task 2 - Create Production VPC
 
 ## Create VPC
 
@@ -111,7 +74,7 @@ gcloud compute networks create griffin-prod-vpc \
 ```bash
 gcloud compute networks subnets create griffin-prod-wp \
     --network=griffin-prod-vpc \
-    --region=us-central1 \
+    --region=asia-south1 \
     --range=192.168.48.0/20
 ```
 
@@ -120,13 +83,13 @@ gcloud compute networks subnets create griffin-prod-wp \
 ```bash
 gcloud compute networks subnets create griffin-prod-mgmt \
     --network=griffin-prod-vpc \
-    --region=us-central1 \
+    --region=asia-south1 \
     --range=192.168.64.0/20
 ```
 
 ---
 
-# Task 3 — Create Bastion Host
+# Task 3 - Create Bastion Host
 
 ## Create Bastion VM
 
@@ -154,7 +117,7 @@ gcloud compute ssh bastion --zone=us-central1-b
 
 ---
 
-# Task 4 — Create and Configure Cloud SQL
+# Task 4 - Create and Configure Cloud SQL
 
 ## Enable API
 
@@ -202,13 +165,13 @@ EXIT;
 
 ---
 
-# Task 5 — Create Kubernetes Cluster
+# Task 5 - Create Kubernetes Cluster
 
 ## Create GKE Cluster
 
 ```bash
 gcloud container clusters create griffin-dev \
-    --zone=us-central1-b \
+    --zone=asia-south1-b \
     --num-nodes=2 \
     --machine-type=e2-standard-4 \
     --network=griffin-dev-vpc \
@@ -224,7 +187,7 @@ gcloud container clusters get-credentials griffin-dev \
 
 ---
 
-# Task 6 — Prepare Kubernetes Cluster
+# Task 6 - Prepare Kubernetes Cluster
 
 ## Copy Kubernetes Files
 
@@ -275,9 +238,9 @@ kubectl create secret generic cloudsql-instance-credentials \
 
 ---
 
-# Task 7 — Deploy WordPress
+## Task 7 - Deploy WordPress
 
-## Get SQL Connection Name
+### Get SQL Connection Name
 
 ```bash
 gcloud sql instances describe griffin-dev-db \
@@ -287,12 +250,12 @@ gcloud sql instances describe griffin-dev-db \
 Example:
 
 ```text
-qwiklabs-gcp-xxxx:us-central1:griffin-dev-db
+qwiklabs-gcp-xxxx:asia-south1:griffin-dev-db
 ```
 
 ---
 
-## Edit Deployment File
+### Edit Deployment File
 
 ```bash
 nano wp-deployment.yaml
@@ -312,19 +275,19 @@ YOUR_PROJECT_ID:us-central1:griffin-dev-db
 
 ---
 
-## Deploy WordPress
+### Deploy WordPress
 
 ```bash
 kubectl apply -f wp-deployment.yaml
 ```
 
-## Create Service
+### Create Service
 
 ```bash
 kubectl apply -f wp-service.yaml
 ```
 
-## Check Service
+### Check Service
 
 ```bash
 kubectl get svc
@@ -340,9 +303,9 @@ is assigned.
 
 ---
 
-# Task 8 — Enable Monitoring
+## Task 8 - Enable Monitoring
 
-## Open Monitoring
+### Open Monitoring
 
 Navigate:
 
@@ -354,7 +317,8 @@ Monitoring → Uptime Checks
 
 | Setting       | Value             |
 | ------------- | ----------------- |
-| Name          | `wordpress-check` |
+| Name          | `wordpress-check`
+|Protocol       | HTTP               |
 | Resource Type | URL               |
 | URL           | External IP       |
 | Path          | `/`               |
@@ -363,7 +327,7 @@ Save the configuration.
 
 ---
 
-# Task 9 — Provide IAM Access
+## Task 9 - Provide IAM Access
 
 Navigate:
 
@@ -381,33 +345,33 @@ role.
 
 ---
 
-# Validation Commands
+## Validation Commands
 
-## Kubernetes Pods
+### Kubernetes Pods
 
 ```bash
 kubectl get pods
 ```
 
-## Kubernetes Services
+### Kubernetes Services
 
 ```bash
 kubectl get svc
 ```
 
-## Deployments
+### Deployments
 
 ```bash
 kubectl get deployments
 ```
 
-## GKE Clusters
+### GKE Clusters
 
 ```bash
 gcloud container clusters list
 ```
 
-## Cloud SQL Instances
+### Cloud SQL Instances
 
 ```bash
 gcloud sql instances list
@@ -415,7 +379,7 @@ gcloud sql instances list
 
 ---
 
-# Common Errors and Fixes
+## Common Errors and Fixes
 
 | Problem                     | Solution                              |
 | --------------------------- | ------------------------------------- |
@@ -427,7 +391,7 @@ gcloud sql instances list
 
 ---
 
-# Final Verification Checklist
+## Final Verification Checklist
 
 | Resource           | Expected Name      |
 | ------------------ | ------------------ |
@@ -441,7 +405,7 @@ gcloud sql instances list
 
 ---
 
-# Completion
+## Completion
 
 After all tasks are validated successfully:
 
