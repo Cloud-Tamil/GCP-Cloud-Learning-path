@@ -1,5 +1,6 @@
 # Google Cloud Storage - Implementation
 
+### Google Cloud Storage is a fully managed object storage service provided by Google Cloud for storing and retrieving any amount of data from anywhere on the internet.
 ```
 User
   │
