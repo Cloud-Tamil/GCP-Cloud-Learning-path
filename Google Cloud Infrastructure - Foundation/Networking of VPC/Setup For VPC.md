@@ -1,16 +1,16 @@
-# 🌐 Google Cloud VPC Networking Lab — Step-by-Step Guide
+# 🌐 Google Cloud VPC Networking - Step-by-Step Guide
 
 ## 📘 Overview
 
 This lab teaches you how to:
 
 * Explore the default VPC network
-* Create Auto Mode and Custom Mode VPCs
-* Configure firewall rules
-* Create VM instances
-* Test internal and external connectivity
-* Understand VPC isolation
-
+* Create an auto mode network with firewall rules
+* Convert an auto mode network to a custom mode network
+* Create custom mode VPC networks with firewall rules
+* Create VM instances using Compute Engine
+* Explore the connectivity for VM instances across VPC networks
+  
 ---
 
 # 🧠 Core Concepts
@@ -26,43 +26,11 @@ This lab teaches you how to:
 
 ---
 
-# 🏗 Final Architecture
-
-```text
-                    INTERNET
-                        │
-        ┌────────────────────────────────┐
-        │                                │
-        ▼                                ▼
-
-   mynetwork                     managementnet
- (Auto → Custom)                   (Custom)
-
- ┌──────────────┐              ┌────────────────┐
- │mynet-us-vm  │              │managementnet-  │
- │us-central1  │              │us-vm           │
- └──────────────┘              └────────────────┘
-         │
-         │ Internal Communication
-         │
- ┌──────────────┐
- │mynet-notus-vm│
- │asia-south1   │
- └──────────────┘
-
-         privatenet
-          (Custom)
-
- ┌────────────────┐
- │privatenet-us-vm│
- └────────────────┘
-```
-
 ---
 
-# 🚀 Task 1 — Explore the Default Network
+# 🚀 Task 1 - Explore the Default Network
 
-## Step 1 — Open VPC Networks
+## Step 1 - Open VPC Networks
 
 Navigate to:
 
@@ -211,7 +179,7 @@ No more networks available
 
 ---
 
-# 🚀 Task 2 — Create Auto Mode Network
+# 🚀 Task 2 - Create Auto Mode Network
 
 ## Enable Required APIs
 
@@ -277,7 +245,7 @@ Click Create.
 
 ---
 
-# 🖥 Create VM 1 — mynet-us-vm
+# 🖥 Create VM 1 - mynet-us-vm
 
 Navigate to:
 
@@ -307,7 +275,7 @@ Click Create.
 
 ---
 
-# 🖥 Create VM 2 — mynet-notus-vm
+# 🖥 Create VM 2 - mynet-notus-vm
 
 Use:
 
@@ -406,7 +374,7 @@ Click Save.
 
 ---
 
-# 🚀 Task 3 — Create Custom Networks
+# 🚀 Task 3 - Create Custom Networks
 
 Create:
 
@@ -549,7 +517,7 @@ gcloud compute instances create privatenet-us-vm \
 
 ---
 
-# 🚀 Task 4 — Connectivity Testing
+# 🚀 Task 4 - Connectivity Testing
 
 # 🌍 External IP Connectivity
 
@@ -654,21 +622,6 @@ mynetwork-allow-icmp
 mynet-notus-vm
 ```
 
----
-
-# 🎯 Summary
-
-| Topic           | Result                         |
-| --------------- | ------------------------------ |
-| Default VPC     | Automatically created          |
-| Auto Mode VPC   | Creates subnets automatically  |
-| Custom Mode VPC | Manual subnet management       |
-| Firewall Rules  | Control traffic                |
-| Same VPC        | Internal communication works   |
-| Different VPC   | Internal communication blocked |
-
----
-
 # 💡 Real World Best Practices
 
 Production environments usually use:
@@ -682,5 +635,3 @@ Production environments usually use:
   * Public workloads
 
 ---
-
-# 📚 End of Guide
