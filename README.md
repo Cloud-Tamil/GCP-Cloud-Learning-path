@@ -1,53 +1,65 @@
 <div align="center">
-  
-# 👋 Welcome to Dr. Abhishek Cloud Tutorials!  
 
-<h3 style="font-family: 'Segoe UI', sans-serif;">🌟 Connect with fellow cloud enthusiasts, ask questions, and share your learning journey! 🌟</h3>
+# ☁️ Hi, I'm M. Tamilselvan  
+### 🚀 Cloud Engineer | DevOps Enthusiast | Kubernetes Learner
 
-<p style="font-family: 'Segoe UI', sans-serif;">Don't forget to follow our social handles and subscribe to the channel for more cloud tutorials!</p>
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=24&pause=1000&color=00C2FF&center=true&vCenter=true&width=600&lines=Cloud+Engineer;Google+Cloud+%7C+AWS+%7C+DevOps;Kubernetes+%7C+Docker+%7C+Terraform;Always+Learning+New+Technologies" alt="Typing SVG" />
 
-<!-- Telegram Channel -->
-<a href="https://t.me/+gBcgRTlZLyM4OGI1" target="_blank" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/-Join_Telegram_Channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white&labelColor=2CA5E0&color=white" alt="Telegram Channel"/>
-</a>
-
-<!-- Telegram Group -->
-<a href="https://t.me/+RujS6mqBFawzZDFl" target="_blank" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/-Join_Telegram_Group-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white&labelColor=2CA5E0&color=white" alt="Telegram Group"/>
-</a>
+<p align="center">
+  <img src="https://img.shields.io/badge/Cloud-GCP-blue?style=for-the-badge&logo=googlecloud&logoColor=white"/>
+  <img src="https://img.shields.io/badge/AWS-Cloud-orange?style=for-the-badge&logo=amazonaws&logoColor=white"/>
+  <img src="https://img.shields.io/badge/DevOps-Automation-black?style=for-the-badge&logo=devops&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white"/>
+</p>
 
 <!-- YouTube -->
-<a href="https://www.youtube.com/@drabhishek.5460?sub_confirmation=1" target="_blank" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/-Subscribe_YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=FF0000&color=white" alt="YouTube"/>
-</a>
-
-<!-- Instagram -->
-<a href="https://www.instagram.com/drabhishek.5460/" target="_blank" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/-Follow_Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white&labelColor=E4405F&color=white" alt="Instagram"/>
-</a>
-
-<!-- Twitter/X -->
-<a href="https://x.com/DAbhishek5460" target="_blank" style="text-decoration: none;">
-  <img src="https://img.shields.io/badge/-Follow_X-000000?style=for-the-badge&logo=x&logoColor=white&labelColor=000000&color=white" alt="X (Twitter)"/>
+<a href="https://www.youtube.com/@drabhishek.5460?sub_confirmation=1" target="_blank">
+  <img src="https://img.shields.io/badge/Subscribe-YouTube-red?style=for-the-badge&logo=youtube&logoColor=white"/>
 </a>
 
 </div>
 
 ---
 
-### 📌 Important Notice  
-This educational material is provided for learning purposes only to help you:  
-- Understand Google Cloud lab services  
-- Enhance your technical skills  
-- Advance your cloud computing career  
+# 💫 About Me
 
-**Before using any scripts or guides:**  
-1. Always review the content thoroughly  
-2. Complete labs through official channels first  
-3. Comply with Qwiklabs Terms of Service  
-4. Adhere to YouTube Community Guidelines  
+💻 Passionate about Cloud Computing & DevOps  
+☁️ Learning and building projects on Google Cloud & AWS  
+🚀 Exploring Kubernetes, Docker, CI/CD & Terraform  
+📚 Sharing cloud tutorials and hands-on labs  
+🎯 Goal: Become an Expert Cloud & DevOps Engineer  
 
-❌ Not intended to bypass legitimate learning processes  
-✅ Meant to supplement your educational journey  
+---
+
+# 🛠️ Tech Stack
+
+<div align="center">
+
+<img src="https://skillicons.dev/icons?i=aws,gcp,docker,kubernetes,terraform,linux,bash,github,git,jenkins,python,vscode" />
 
 </div>
+
+---
+
+# ☁️ Cloud & DevOps Skills
+
+```yaml
+Cloud Platforms:
+  - Google Cloud Platform (GCP)
+  - Amazon Web Services (AWS)
+
+DevOps Tools:
+  - Docker
+  - Kubernetes
+  - Terraform
+  - Jenkins
+  - GitHub Actions
+
+Operating Systems:
+  - Linux
+  - Ubuntu
+
+Other Skills:
+  - Networking
+  - CI/CD Pipelines
+  - Infrastructure as Code
