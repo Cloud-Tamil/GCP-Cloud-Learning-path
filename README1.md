@@ -14,6 +14,12 @@
 
 </div>
 
+<div align="center">
+
+<img src="https://skillicons.dev/icons?i=gcp,docker,kubernetes,terraform,linux,git,jenkins,vscode" />
+
+</div>
+
 ---
 
 <div align="center">
