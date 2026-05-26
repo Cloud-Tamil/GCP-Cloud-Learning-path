@@ -1,53 +1,74 @@
-<div align="center">
+# ☁️ Cloud Networking in Google Cloud Platform (GCP)
 
-# ☁️ Hi, I'm M. Tamilselvan  
-### 🚀 Cloud & DevOps Engineer | Google Cloud | AWS | Kubernetes
+## 📘 Overview
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=24&pause=1000&color=00C2FF&center=true&vCenter=true&width=700&lines=Cloud+%26+DevOps+Engineer;Google+Cloud+Platform+%7C+AWS;Kubernetes+%7C+Docker+%7C+Terraform;CI%2FCD+Automation+%7C+Linux;Building+Scalable+Cloud+Solutions" alt="Typing SVG" />
+This project demonstrates the fundamentals of networking in Google Cloud Platform (GCP) using both default and custom Virtual Private Cloud (VPC) networks.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white"/>
-  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Azure-232F87?style=for-the-badge&logo=amazonaws&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black"/>
-</p>
+The lab covers:
 
-</div>
+- Understanding default and custom VPC networks
+- Creating subnet-based custom networks
+- Configuring firewall rules
+- Applying network tags to virtual machines
+- Securing communication between instances
 
 ---
 
-# 💫 About Me
+# 🚀 What You'll Learn
 
-💻 Passionate Cloud & DevOps Engineer focused on building scalable and reliable infrastructure  
-
-☁️ Hands-on experience with Google Cloud Platform (GCP) and Amazon Web Services (AWS)  
-
-🚀 Skilled in Kubernetes, Docker, Terraform, Linux, and CI/CD automation  
-
-🔧 Interested in Infrastructure as Code (IaC), Cloud Security, Networking, and Automation  
-
-📚 Continuously learning modern cloud technologies and building real-world projects  
-
-🎯 Goal: To become a highly skilled Cloud & DevOps Architect  
+- Basic concepts and constructs of Google Cloud networking
+- Difference between default and custom VPC networks
+- How subnet-based networks work in GCP
+- How firewall rules control traffic flow
+- How to use instance tags for firewall policies
+- How to create secure cloud network architectures
 
 ---
 
-# ⚡ Tech Stack
+# 🏗️ Architecture Overview
 
-## ☁️ Cloud Platforms
-- Google Cloud Platform (GCP)
-- Amazon Web Services (AWS)
-- Microsoft Azure (Azure)
+```text
+                    INTERNET
+                        │
+                        ▼
+              ┌─────────────────┐
+              │ Firewall Rules  │
+              └─────────────────┘
+                        │
+                        ▼
+         ┌───────────────────────────┐
+         │   Custom VPC Network      │
+         │  cloudmart-prod-network   │
+         └───────────────────────────┘
+                │           │
+                ▼           ▼
+
+      ┌────────────────┐   ┌────────────────┐
+      │ Web Subnet     │   │ App Subnet     │
+      │ 10.10.0.0/24   │   │ 10.10.1.0/24   │
+      └────────────────┘   └────────────────┘
+                │
+                ▼
+      ┌────────────────┐
+      │ DB Subnet      │
+      │ 10.10.2.0/24   │
+      └────────────────┘
+```
 
 ---
 
-# 📈 Current Focus
+# 📋 Prerequisites
 
-🌱 Learning Advanced Kubernetes & Cloud Architecture  
-🔐 Exploring DevSecOps & Cloud Security Best Practices  
-⚡ Building Automated Cloud Infrastructure Projects  
+Before starting this lab, ensure you have:
+
+- A Google Cloud account
+- Billing enabled
+- Access to Google Cloud Console
+- Basic understanding of networking concepts
+- Compute Engine API enabled
 
 ---
+
+### CloudMart GCP Networking Lab
+
+Built for learning and hands-on practice in Google Cloud Networking and Infrastructure.
