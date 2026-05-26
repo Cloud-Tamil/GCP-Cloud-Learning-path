@@ -13,13 +13,9 @@ This guide walks through the manual creation of a **custom VPC**, **subnets**, *
 
 ---
 
-## Part 1 — Create Custom VPC Network
-
-| Step | Action |
-|------|--------|
-| 1 | Go to **Navigation Menu** ☰ → **VPC network** → **VPC networks** |
-| 2 | Click **+ CREATE VPC NETWORK** |
-| 3 | Fill the form: |
+## Part 1 - Create Custom VPC Network
+- Go to **Navigation Menu** ☰ → **VPC network** → **VPC networks**
+- Click **+ CREATE VPC NETWORK**
 
 | Field | Value |
 |-------|-------|
@@ -30,9 +26,9 @@ This guide walks through the manual creation of a **custom VPC**, **subnets**, *
 
 ---
 
-## Part 2 — Create Subnets
+## Part 2 - Create Subnets
 
-Inside the same VPC creation form, add **three subnets**:
+- Inside the same VPC creation form, add **three subnets**:
 
 ### 2.1 Web Subnet
 
@@ -42,7 +38,7 @@ Inside the same VPC creation form, add **three subnets**:
 | Region | `us-central1` |
 | IP range | `10.10.0.0/24` |
 
-Click **Done**.
+- Click **Done**.
 
 ### 2.2 App Subnet
 
@@ -53,7 +49,7 @@ Click **Done**.
 | IP range | `10.10.1.0/24` |
 | **Private Google Access** | **ON** |
 
-Click **Done**.
+- Click **Done**.
 
 ### 2.3 Database Subnet
 
@@ -64,15 +60,15 @@ Click **Done**.
 | IP range | `10.10.2.0/24` |
 | **Private Google Access** | **ON** |
 
-Click **Done** → then click **CREATE** at the bottom.
+- Click **Done** → then click **CREATE** at the bottom.
 
 ✅ **VPC network `cloudmart-prod-network` is ready.**
 
 ---
 
-## Part 3 — Firewall Rules
+## Part 3 - Firewall Rules
 
-Go to: **Navigation Menu** → **VPC network** → **Firewall**
+- Go to: **Navigation Menu** → **VPC network** → **Firewall**
 
 ### Rule 1 – Allow HTTP (to Web)
 
@@ -87,9 +83,9 @@ Go to: **Navigation Menu** → **VPC network** → **Firewall**
 | Source IP ranges | `0.0.0.0/0` |
 | Protocols/ports | `tcp:80` |
 
-Click **CREATE**.
+- Click **CREATE**.
 
-### Rule 2 – Allow HTTPS (to Web)
+### Rule 2 - Allow HTTPS (to Web)
 
 | Field | Value |
 |-------|-------|
@@ -98,7 +94,7 @@ Click **CREATE**.
 | Source IP ranges | `0.0.0.0/0` |
 | Protocols/ports | `tcp:443` |
 
-### Rule 3 – Web → App
+### Rule 3 - Web → App
 
 | Field | Value |
 |-------|-------|
@@ -107,7 +103,7 @@ Click **CREATE**.
 | Source IP ranges | `10.10.0.0/24` |
 | Protocols/ports | `tcp:8080,tcp:8443` |
 
-### Rule 4 – App → DB
+### Rule 4 - App → DB
 
 | Field | Value |
 |-------|-------|
@@ -116,9 +112,9 @@ Click **CREATE**.
 | Source IP ranges | `10.10.1.0/24` |
 | Protocols/ports | `tcp:3306,tcp:5432` |
 
-### Rule 5 – SSH (your corporate IP)
+### Rule 5 - SSH (your corporate IP)
 
-First find your public IP:  
+- First find your public IP:  
 👉 Open [https://ifconfig.me](https://ifconfig.me) and copy the IP.
 
 | Field | Value |
@@ -128,7 +124,7 @@ First find your public IP:
 | Source IP ranges | `YOUR_IP/32` (e.g., `203.0.113.45/32`) |
 | Protocols/ports | `tcp:22` |
 
-### Rule 6 – Health Checks (GCP internal)
+### Rule 6 - Health Checks (GCP internal)
 
 | Field | Value |
 |-------|-------|
@@ -137,7 +133,7 @@ First find your public IP:
 | Source IP ranges | `130.211.0.0/22,35.191.0.0/16` |
 | Protocols/ports | `tcp:80,tcp:8080` |
 
-### Rule 7 – Default Deny (lowest priority)
+### Rule 7 - Default Deny (lowest priority)
 
 | Field | Value |
 |-------|-------|
@@ -151,11 +147,11 @@ First find your public IP:
 
 ---
 
-## Part 4 — Create Virtual Machines (Three‑Tier)
+## Part 4 - Create Virtual Machines (Three‑Tier)
 
-Go to: **Navigation Menu** → **Compute Engine** → **VM instances**
+- Go to: **Navigation Menu** → **Compute Engine** → **VM instances**
 
-### VM 1 – Web Server
+### VM 1 - Web Server
 
 Click **+ CREATE INSTANCE**
 
