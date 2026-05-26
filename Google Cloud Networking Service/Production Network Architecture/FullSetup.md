@@ -1,135 +1,93 @@
-# CloudMart Production Network on Google Cloud
+# CloudMart GCP Production Network Learning
 
-A complete three-tier production-grade networking setup in Google Cloud Platform (GCP) for an e-commerce platform.
-
----
-
-# Architecture Overview
-
-This project demonstrates:
-
-- Custom VPC Network
-- Three-tier architecture
-- Web subnet
-- Application subnet
-- Database subnet
-- Secure firewall segmentation
-- Private VM architecture
-- SSH restricted access
-- Validation and testing scripts
+This project demonstrates how to build a secure three-tier production network in Google Cloud Platform manually and using gcloud scripts.
 
 ---
 
-# Architecture Diagram
+# Architecture
 
-![Architecture](architecture/architecture-diagram.png)
+- Custom VPC
+- Web Tier
+- Application Tier
+- Database Tier
+- Firewall Security
+- Private Networking
+- Public/Private VM Design
 
 ---
 
 # Network Design
 
-| Tier | Subnet | CIDR | Purpose |
-|------|---------|------|----------|
-| Web Tier | cloudmart-web-subnet | 10.10.0.0/24 | Internet-facing servers |
-| App Tier | cloudmart-app-subnet | 10.10.1.0/24 | Internal business logic |
-| DB Tier | cloudmart-db-subnet | 10.10.2.0/24 | Secure database layer |
+| Tier | Subnet | CIDR | Access |
+|------|------|------|------|
+| Web | 10.10.0.0/24 | Public | Internet-facing |
+| App | 10.10.1.0/24 | Private | Internal |
+| Database | 10.10.2.0/24 | Restricted | Most Secure |
 
 ---
 
-# Security Design
+# Project Structure
 
-## Firewall Rules
-
-| Rule | Purpose |
-|------|----------|
-| HTTP | Allow website access |
-| HTTPS | Secure traffic |
-| Web → App | Internal API communication |
-| App → DB | Database communication |
-| SSH | Restricted admin access |
-| Health Checks | Google load balancer probes |
-| Default Deny | Block everything else |
+| Folder | Purpose |
+|---|---|
+| manual-guide | Step-by-step console setup |
+| scripts | Automation scripts |
+| screenshots | Console screenshots |
+| architecture | Network diagrams |
 
 ---
 
-# Deployment Methods
+# Manual Setup Guide
 
-## Option 1: Manual Deployment (Console UI)
+Follow these guides:
 
-Follow:
-- manual-guide/01-create-vpc.md
-- manual-guide/02-create-subnets.md
-- manual-guide/03-firewall-rules.md
+1. manual-guide/01-create-vpc.md
+2. manual-guide/02-create-firewall-rules.md
+3. manual-guide/03-create-vms.md
+4. manual-guide/04-testing.md
 
 ---
 
-## Option 2: CLI Deployment
+# Automated Deployment
 
-Run:
+## Create Network
 
 ```bash
-chmod +x scripts/*.sh
 ./scripts/create-network.sh
+```
+
+## Create Firewalls
+
+```bash
 ./scripts/create-firewalls.sh
+```
+
+## Create VMs
+
+```bash
 ./scripts/create-vms.sh
 ```
 
 ---
 
-# Validation
-
-Run:
+# Testing
 
 ```bash
-./scripts/validation.sh
+./scripts/test-network.sh
 ```
 
-Expected result:
+Expected Output:
 
 ```text
-✅ HTTP Access: Working
-✅ SSH Access: Working
-✅ App VM: No public IP
-✅ Database VM: No public IP
-🎉 PRODUCTION NETWORK FULLY VERIFIED!
+✅ Web Server Accessible
+✅ SSH Working
+✅ App VM Private
+✅ DB VM Private
 ```
-
----
-
-# Security Best Practices Used
-
-- Least privilege access
-- Private application/database tiers
-- Restricted SSH access
-- Default deny firewall model
-- Network segmentation
-- Controlled ingress traffic
-
----
-
-# Cost Optimization
-
-- e2-micro instances
-- Free-tier eligible resources
-- Minimal architecture footprint
-
----
-
-# Future Improvements
-
-- Load Balancer
-- Managed Instance Groups
-- Cloud SQL
-- Cloud Armor
-- Cloud NAT
-- VPC Flow Logs
-- Cloud Monitoring
 
 ---
 
 # Cleanup
-
-To remove all resources:
 
 ```bash
 ./scripts/cleanup.sh
@@ -137,12 +95,13 @@ To remove all resources:
 
 ---
 
-# Author
+# Learning Objectives
 
-Your Name
+- Understand VPC networking
+- Create secure firewall rules
+- Build subnet isolation
+- Understand public vs private VMs
+- Learn production network architecture
+- Practice Google Cloud networking
 
 ---
-
-# License
-
-MIT License
