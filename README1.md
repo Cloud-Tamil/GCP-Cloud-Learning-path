@@ -1,111 +1,16 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:4285F4,25:34A853,50:FBBC05,75:EA4335,100:4285F4&height=220&section=header&text=M.%20Tamilselvan&fontSize=45&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Google%20Cloud%20Infrastructure%20Engineer&descAlignY=58&descSize=20"/>
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=260&color=0:0F2027,25:203A43,50:2C5364,75:4285F4,100:34A853&text=M.%20Tamilselvan&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=☁️%20Google%20Cloud%20%7C%20DevOps%20Engineer%20%7C%20Cloud%20Automation&descAlignY=58&descSize=22"/>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&pause=1000&color=4285F4&center=true&vCenter=true&width=850&lines=☁️+Google+Cloud+Infrastructure+Engineer;🚀+Google+Cloud+Platform+(GCP);⚙️+Compute+Engine+%7C+GKE+%7C+Cloud+Build;🔥+Cloud+Infrastructure+%26+Automation;📚+Hands-on+Google+Cloud+Labs+%26+Projects" alt="Typing SVG" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=26&pause=1000&color=00C2FF&center=true&vCenter=true&multiline=true&width=900&height=120&lines=☁️+Google+Cloud+Infrastructure+Engineer;🚀+Building+Scalable+Cloud+Architectures;⚙️+GKE+%7C+Docker+%7C+Terraform+%7C+CI%2FCD;🔥+Cloud+Automation+%7C+DevOps+%7C+Networking;📚+Always+Learning+%26+Building+on+Google+Cloud" alt="Typing SVG" />
 
 <br>
 
-<img src="https://komarev.com/ghpvc/?username=YOUR_USERNAME&label=Profile%20Views&color=4285F4&style=for-the-badge" alt="profile views"/>
+<img src="https://komarev.com/ghpvc/?username=Cloud-Tamil&label=PROFILE+VIEWS&color=0e75b6&style=for-the-badge" />
 
-</div>
+<img src="https://img.shields.io/github/followers/Cloud-Tamil?style=for-the-badge&logo=github&color=181717"/>
 
----
-
-# ☁️ About Me
-
-<img align="right" alt="Cloud" width="350" src="https://media.giphy.com/media/coxQHKASG60HrHtvkt/giphy.gif">
-
-☁️ Google Cloud Infrastructure Engineer  
-🚀 Passionate about building scalable cloud infrastructure  
-⚙️ Working with Google Kubernetes Engine (GKE) & Compute Engine  
-📚 Sharing Google Cloud tutorials, labs, and real-world projects  
-🔥 Learning cloud automation, networking, and infrastructure security  
-🎯 Goal: Become an Expert Google Cloud Architect  
-
----
-
-# ⚡ Google Cloud Skills
-
-<div align="center">
-
-<img src="https://skillicons.dev/icons?i=gcp,docker,kubernetes,terraform,linux,bash,git,github,vscode&perline=5" />
-
-</div>
-
----
-
-# ☁️ Google Cloud Technologies
-
-<div align="center">
-
-| Infrastructure | Containers | Networking | DevOps |
-|---|---|---|---|
-| Compute Engine | Google Kubernetes Engine (GKE) | VPC Networks | Cloud Build |
-| Cloud Storage | Docker | Load Balancing | CI/CD Pipelines |
-| IAM & Security | Artifact Registry | Cloud DNS | Automation |
-| Cloud Monitoring | Kubernetes Deployments | Firewall Rules | Infrastructure as Code |
-
-</div>
-
----
-
-# 🚀 Google Cloud Projects
-
-<div align="center">
-
-| Project | Description |
-|---|---|
-| ☁️ GCP Challenge Labs | Hands-on Google Cloud labs |
-| ☸️ GKE Deployments | Kubernetes cluster management |
-| ⚙️ Cloud Build CI/CD | Automated deployments |
-| 🔒 Cloud Security | IAM & network security |
-| 🌐 VPC Networking | Subnets, firewall & routing |
-
-</div>
-
----
-
-# 📊 GitHub Analytics
-
-<div align="center">
-
-<img height="170" src="https://github-readme-stats.vercel.app/api?username=Cloud-Tamil&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117"/>
-
-<img height="170" src="https://github-readme-streak-stats.herokuapp.com/?user=YOUR_USERNAME&theme=tokyonight&hide_border=true&background=0D1117"/>
-
-<br><br>
-
-<img src="https://github-readme-activity-graph.vercel.app/graph?username=YOUR_USERNAME&theme=react-dark&hide_border=true&area=true"/>
-
-</div>
-
----
-
-# 📺 Google Cloud Tutorials
-
-<div align="center">
-
-<a href="https://www.youtube.com/@drabhishek.5460?sub_confirmation=1" target="_blank">
-  <img src="https://img.shields.io/badge/Subscribe%20on-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white"/>
-</a>
-
-<br><br>
-
-☁️ Google Cloud Tutorials • GKE • Cloud Build • Infrastructure Labs • Networking
-
-</div>
-
----
-
-# 🏆 Certifications & Learning
-
-<div align="center">
-
-🥇 Google Cloud Skills Boost Labs  
-☁️ Google Cloud Infrastructure  
-⚙️ Kubernetes & Cloud Automation  
-📚 Continuous Hands-on Learning  
+<img src="https://img.shields.io/github/stars/Cloud-Tamil?style=for-the-badge&logo=github&color=FFD700"/>
 
 </div>
 
@@ -113,8 +18,24 @@
 
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:4285F4,25:34A853,50:FBBC05,75:EA4335,100:4285F4&height=120&section=footer"/>
-
-### ☁️ Build • Automate • Scale on Google Cloud ☁️
+# 💫 About Me
 
 </div>
+
+<img align="right" alt="Coding" width="370" src="https://media.giphy.com/media/f3iwJFOVOwuy7K6FFw/giphy.gif">
+
+```yaml
+Name: M. Tamilselvan
+Role: Associate Cloud & DevOps Engineer
+Focus:
+  - Google Cloud Platform (GCP)
+  - Cloud Networking & Security
+
+Currently Learning:
+  - Kubernetes & Docker
+  - Terraform & Infrastructure as Code
+  - Cloud Architecture
+  - Automation & Monitoring
+
+Goal:
+  - Become a Professional Cloud Architect
