@@ -233,7 +233,7 @@ Three-tier architecture setup completed successfully.
 
 ---
 
-## PART 5 — Manual Testing
+## PART 5 - Manual Testing
 
 ### Test Website Access
 
