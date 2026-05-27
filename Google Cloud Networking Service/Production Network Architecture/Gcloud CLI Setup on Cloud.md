@@ -15,10 +15,10 @@
 
 echo "Configuring default region and zone..."
 
-gcloud config set compute/zone "us-east4-a"
+gcloud config set compute/zone "us-central1-a"
 export ZONE=$(gcloud config get compute/zone)
 
-gcloud config set compute/region "us-east4"
+gcloud config set compute/region "us-central1"
 export REGION=$(gcloud config get compute/region)
 
 # =========================================================
