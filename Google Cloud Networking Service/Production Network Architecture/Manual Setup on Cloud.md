@@ -5,9 +5,6 @@ This guide walks through the manual creation of a **custom VPC**, **subnets**, *
 ---
 
 ## 📌 Prerequisites
-
-- A GCP project with **billing enabled**
-- **Compute Engine API** enabled
 - **IAM role**: `Compute Network Admin` + `Compute Instance Admin` (or `Owner`)
 - A terminal / browser with access to [GCP Console](https://console.cloud.google.com)
 
@@ -153,7 +150,7 @@ This guide walks through the manual creation of a **custom VPC**, **subnets**, *
 
 ### VM 1 - Web Server
 
-Click **+ CREATE INSTANCE**
+- Click **+ CREATE INSTANCE**
 
 | Section | Field | Value |
 |---------|-------|-------|
@@ -167,10 +164,156 @@ Click **+ CREATE INSTANCE**
 | | Network tags | `cloudmart-web,cloudmart-ssh` |
 | Security (expand) | Startup script | (see below) |
 
-**Startup Script:**
-```bash
+- **Startup Script:**
+```
 #!/bin/bash
 apt-get update
 apt-get install -y nginx
 systemctl start nginx
 echo '<h1>CloudMart Web Server - Production</h1>' > /var/www/html/index.html
+```
+
+### VM 2 - Application Server
+
+| Field | Value |
+|-------|-------|
+| Name | `cloudmart-app-vm` |
+| Region | `us-central1` |
+| Zone | `us-central1-a` |
+| Machine Type | `e2-micro` |
+| Boot Disk | `Debian GNU/Linux` |
+| Subnet | `cloudmart-app-subnet` |
+| Internal IP | Auto-generated |
+| External IP | None |
+| Firewall Rules | Allow internal traffic only |
+| Network Tags | `cloudmart-app` |
+
+- **Startup Script:**
+
+```bash
+#!/bin/bash
+apt-get update
+apt-get install -y python3
+```
+
+- Click **CREATE**
+
+---
+
+### VM 3 - Database Server
+
+| Field | Value |
+|-------|-------|
+| Name | `cloudmart-db-vm` |
+| Region | `us-central1` |
+| Zone | `us-central1-a` |
+| Machine Type | `e2-micro` |
+| Boot Disk | `Debian GNU/Linux` |
+| Subnet | `cloudmart-db-subnet` |
+| Internal IP | Auto-generated |
+| External IP | None |
+| Firewall Rules | Allow internal traffic only |
+| Network Tags | `cloudmart-db` |
+
+- **Startup Script:**
+
+```bash
+#!/bin/bash
+apt-get update
+apt-get install -y mysql-server
+```
+
+- Click **CREATE**
+
+---
+
+#### ✅ Result
+
+Three-tier architecture setup completed successfully.
+
+---
+
+## PART 5 — Manual Testing
+
+### Test Website Access
+
+1. Navigate to:
+
+```text
+Compute Engine → VM Instances
+```
+
+2. Copy the **External IP** of:
+
+```text
+cloudmart-web-vm
+```
+
+3. Open your browser and access:
+
+```text
+http://WEB_EXTERNAL_IP
+```
+
+- #### Expected Output
+
+```text
+CloudMart Web Server - Production
+```
+
+---
+
+### Test SSH Access
+
+1. In VM Instances page, click:
+
+```text
+SSH
+```
+
+2. Beside:
+
+```text
+cloudmart-web-vm
+```
+
+- #### Expected Result
+
+```text
+Linux terminal opens successfully
+```
+
+---
+
+### Test Internal Connectivity
+
+- Inside the **Web VM terminal**, run:
+
+```bash
+ping APP_INTERNAL_IP
+```
+
+- #### Expected Result
+
+```text
+Ping successful
+```
+
+---
+
+### Test Security Isolation
+
+- From the **Web VM**, run:
+
+```bash
+ping DB_INTERNAL_IP
+```
+
+- #### Expected Result
+
+```text
+FAILED / Request timeout
+```
+
+✅ Database tier is isolated correctly.
+
