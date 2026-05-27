@@ -15,8 +15,8 @@
 
 echo "Configuring default region and zone..."
 
-gcloud config set compute/region us-central1
-gcloud config set compute/zone us-central1-a
+gcloud config set compute/region us-west1
+gcloud config set compute/zone us-west1-a
 
 # =========================================================
 # PART 2 — Create Custom VPC Network
