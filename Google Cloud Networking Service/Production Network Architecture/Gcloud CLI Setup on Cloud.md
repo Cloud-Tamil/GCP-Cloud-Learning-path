@@ -106,7 +106,7 @@ gcloud compute firewall-rules create cloudmart-allow-ssh-corp \
     --direction=INGRESS \
     --action=ALLOW \
     --rules=tcp:22 \
-    --source-ranges=YOUR_PUBLIC_IP/32 \
+    --source-ranges=103.249.206.147/32 \
     --target-tags=cloudmart-ssh
 
 echo "Creating Health Check firewall rule..."
