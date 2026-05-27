@@ -15,8 +15,11 @@
 
 echo "Configuring default region and zone..."
 
-gcloud config set compute/regionus-central1
-gcloud config set compute/zone us-central1-a
+gcloud config set compute/zone "us-east4-a"
+export ZONE=$(gcloud config get compute/zone)
+
+gcloud config set compute/region "us-east4"
+export REGION=$(gcloud config get compute/region)
 
 # =========================================================
 # PART 2 — Create Custom VPC Network
@@ -35,14 +38,14 @@ echo "Creating Web subnet..."
 
 gcloud compute networks subnets create cloudmart-web-subnet \
     --network=cloudmart-prod-network \
-    --region=us-central1 \
+    --region=$REGION \
     --range=10.10.0.0/24
 
 echo "Creating Application subnet..."
 
 gcloud compute networks subnets create cloudmart-app-subnet \
     --network=cloudmart-prod-network \
-    --region=us-central1 \
+    --region=$REGION \
     --range=10.10.1.0/24 \
     --enable-private-ip-google-access
 
@@ -50,7 +53,7 @@ echo "Creating Database subnet..."
 
 gcloud compute networks subnets create cloudmart-db-subnet \
     --network=cloudmart-prod-network \
-    --region=us-central1 \
+    --region=$REGION \
     --range=10.10.2.0/24 \
     --enable-private-ip-google-access
 
@@ -136,7 +139,7 @@ gcloud compute firewall-rules create cloudmart-deny-all \
 echo "Creating Web Server VM..."
 
 gcloud compute instances create cloudmart-web-vm \
-    --zone=us-central1-a \
+    --zone=$ZONE \
     --machine-type=e2-micro \
     --subnet=cloudmart-web-subnet \
     --tags=cloudmart-web,cloudmart-ssh \
@@ -156,7 +159,7 @@ echo "<h1>CloudMart Web Server - Production</h1>" > /var/www/html/index.html'
 echo "Creating Application Server VM..."
 
 gcloud compute instances create cloudmart-app-vm \
-    --zone=us-central1-a \
+    --zone=$ZONE \
     --machine-type=e2-micro \
     --subnet=cloudmart-app-subnet \
     --no-address \
@@ -174,7 +177,7 @@ apt-get install -y python3'
 echo "Creating Database Server VM..."
 
 gcloud compute instances create cloudmart-db-vm \
-    --zone=us-central1-a \
+    --zone=$ZONE \
     --machine-type=e2-micro \
     --subnet=cloudmart-db-subnet \
     --no-address \
