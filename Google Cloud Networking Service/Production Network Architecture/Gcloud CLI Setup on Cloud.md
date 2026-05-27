@@ -221,6 +221,12 @@ echo "Expected Result: Request timeout / failed"
 # ✅ CloudMart Three-Tier Architecture Completed
 # =========================================================
 
+# =========================================================
+# ✅ Troubleshoot
+# =========================================================
+
+gcloud compute ssh cloudmart-web-vm --zone=us-central1-a --troubleshoot
+
 echo ""
 echo "CloudMart Production Environment Setup Completed Successfully."
 ```
