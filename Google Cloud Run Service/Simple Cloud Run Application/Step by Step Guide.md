@@ -1,10 +1,10 @@
 # Simple Cloud Run Application
 
-A beginner-friendly Node.js application deployed on Google Cloud Run. This project demonstrates how to create a simple web application, containerize it with Docker, and deploy it as a fully managed serverless service.
+- A beginner-friendly Node.js application deployed on Google Cloud Run. This project demonstrates how to create a simple web application, containerize it with Docker, and deploy it as a fully managed serverless service.
 
 ## What You'll Build
 
-A responsive web application that displays:
+- A responsive web application that displays:
 
 * 🚀 Welcome message
 * ☁️ Google Cloud Run deployment information
@@ -28,7 +28,7 @@ Visitor Count: 1
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+- Before you begin, ensure you have:
 
 * A Google Cloud Project
 * Billing enabled
@@ -40,14 +40,14 @@ Before you begin, ensure you have:
 
 ## Step 1: Configure Google Cloud Environment
 
-Set your preferred region and zone:
+- Set your preferred region and zone:
 
 ```bash
 gcloud config set compute/region us-east4
 gcloud config set compute/zone us-east4-c
 ```
 
-Verify configuration:
+- Verify configuration:
 
 ```bash
 gcloud config list
@@ -57,19 +57,19 @@ gcloud config list
 
 ## Step 2: Set the Active Project
 
-Replace the example project ID with your own:
+- Replace the example project ID with your own:
 
 ```bash
 gcloud config set project GCP-PROJECT-ID
 ```
 
-Verify:
+- Verify:
 
 ```bash
 gcloud config get-value project
 ```
 
-Example:
+- Example:
 
 ```text
 my-cloud-project
@@ -83,7 +83,7 @@ my-cloud-project
 export PROJECT_ID=$(gcloud config get-value project)
 ```
 
-Verify:
+- Verify:
 
 ```bash
 echo $PROJECT_ID
@@ -97,8 +97,6 @@ echo $PROJECT_ID
 mkdir my-cloudrun-app
 cd my-cloudrun-app
 ```
-
----
 
 ## Step 5: Create Application Files
 
@@ -157,8 +155,6 @@ fetch('/count')
 EOF
 ```
 
----
-
 ### Create server.js
 
 ```bash
@@ -185,8 +181,6 @@ app.listen(PORT, () => {
 EOF
 ```
 
----
-
 ### Create package.json
 
 ```bash
@@ -205,8 +199,6 @@ cat > package.json << 'EOF'
 }
 EOF
 ```
-
----
 
 ### Create Dockerfile
 
@@ -228,8 +220,6 @@ CMD ["npm","start"]
 EOF
 ```
 
----
-
 ### Create .dockerignore
 
 ```bash
@@ -246,19 +236,19 @@ EOF
 
 ## Step 6: Test Locally
 
-Install dependencies:
+- Install dependencies:
 
 ```bash
 npm install
 ```
 
-Run application:
+- Run application:
 
 ```bash
 npm start
 ```
 
-Open:
+- Open:
 
 ```text
 http://localhost:8080
@@ -288,7 +278,7 @@ gcloud run deploy my-simple-app \
   --allow-unauthenticated
 ```
 
-Cloud Build automatically:
+- Cloud Build automatically:
 
 1. Creates the container image
 2. Stores the image
@@ -299,13 +289,13 @@ Cloud Build automatically:
 
 ## Step 9: Verify Deployment
 
-List Cloud Run services:
+- List Cloud Run services:
 
 ```bash
 gcloud run services list --region us-east4
 ```
 
-Get service URL:
+- Get service URL:
 
 ```bash
 gcloud run services describe my-simple-app \
@@ -313,7 +303,7 @@ gcloud run services describe my-simple-app \
   --format='value(status.url)'
 ```
 
-Example:
+- Example:
 
 ```text
 https://my-simple-app-xxxxx-uc.a.run.app
@@ -323,13 +313,13 @@ https://my-simple-app-xxxxx-uc.a.run.app
 
 ## Step 10: Update the Application
 
-Modify application files:
+- Modify application files:
 
 ```bash
 nano index.html
 ```
 
-Redeploy:
+- Redeploy:
 
 ```bash
 gcloud run deploy my-simple-app \
@@ -338,13 +328,13 @@ gcloud run deploy my-simple-app \
   --allow-unauthenticated
 ```
 
-Cloud Run performs rolling updates automatically with no service interruption.
+- Cloud Run performs rolling updates automatically with no service interruption.
 
 ---
 
 ## Monitoring and Logs
 
-View recent logs:
+- View recent logs:
 
 ```bash
 gcloud logging read \
@@ -352,7 +342,7 @@ gcloud logging read \
 --limit 20
 ```
 
-Tail logs in real time:
+- Tail logs in real time:
 
 ```bash
 gcloud beta run services logs tail my-simple-app \
@@ -363,7 +353,7 @@ gcloud beta run services logs tail my-simple-app \
 
 ## Scaling Configuration
 
-Configure minimum and maximum instances:
+- Configure minimum and maximum instances:
 
 ```bash
 gcloud run services update my-simple-app \
@@ -382,7 +372,7 @@ gcloud run services update my-simple-app \
 
 ## Automated Deployment Script
 
-Create `deploy.sh`:
+- Create `deploy.sh`:
 
 ```bash
 #!/bin/bash
@@ -400,7 +390,7 @@ gcloud run deploy $SERVICE_NAME \
 echo "Deployment completed."
 ```
 
-Run:
+- Run:
 
 ```bash
 chmod +x deploy.sh
@@ -429,23 +419,23 @@ chmod +x deploy.sh
 --min-instances=0
 ```
 
-No instances run when there is no traffic.
+- No instances run when there is no traffic.
 
 #### Free Tier
 
-Cloud Run includes free monthly CPU, memory, and request quotas.
+- Cloud Run includes free monthly CPU, memory, and request quotas.
 
 #### Efficient Container Images
 
-Use slim base images to reduce startup time and image size.
+- Use slim base images to reduce startup time and image size.
 
 ---
 
 ## Conclusion
 
-In this project, we successfully built a simple Node.js web application and deployed it to Google Cloud Run using a fully managed serverless architecture.
+- In this project, we successfully built a simple Node.js web application and deployed it to Google Cloud Run using a fully managed serverless architecture.
 
-Throughout this guide, we:
+- Throughout this guide, we:
 
 * Configured the Google Cloud environment and project settings.
 * Created a responsive web application using HTML, CSS, and JavaScript.
@@ -458,7 +448,7 @@ Throughout this guide, we:
 * Learned how to update the application and redeploy new versions with zero downtime.
 * Explored monitoring, logging, and scaling capabilities available within Cloud Run.
 
-By deploying the application on Cloud Run, we gained several cloud-native benefits:
+- By deploying the application on Cloud Run, we gained several cloud-native benefits:
 
 * **Serverless Infrastructure** – No virtual machines or servers to manage.
 * **Automatic Scaling** – The application automatically scales based on incoming traffic.
@@ -469,6 +459,6 @@ By deploying the application on Cloud Run, we gained several cloud-native benefi
 * **Zero-Downtime Releases** – New revisions can be deployed without interrupting users.
 * **Pay-As-You-Go Pricing** – Pay only for the resources consumed by the application.
 
-This project demonstrates the complete lifecycle of a modern cloud-native application—from development and containerization to deployment and operations—using Google Cloud Run. The same deployment pattern can be extended to host APIs, microservices, enterprise applications, and production-grade workloads in Google Cloud.
+> - This project demonstrates the complete lifecycle of a modern cloud-native application—from development and containerization to deployment and operations—using Google Cloud Run. The same deployment pattern can be extended to host APIs, microservices, enterprise applications, and production-grade workloads in Google Cloud.
 
 ---
