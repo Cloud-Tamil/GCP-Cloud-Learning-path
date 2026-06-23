@@ -1,2054 +1,1032 @@
-# Production-Ready High-Availability Web Application with Network Load Balancer
+# 🌐 Ultimate Production Network Load Balancer — Master Guide
 
-**Complete Deployment & Monitoring Guide for Google Cloud Platform**
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Task 1: Set Up Project and Region](#task-1-set-up-project-and-region)
-- [Task 2: Create VPC Network](#task-2-create-vpc-network)
-- [Task 3: Create Firewall Rules](#task-3-create-firewall-rules)
-- [Task 4: Create Custom Health Check](#task-4-create-custom-health-check)
-- [Task 5: Create Instance Template](#task-5-create-instance-template)
-- [Task 6: Create Managed Instance Group (MIG)](#task-6-create-managed-instance-group-mig)
-- [Task 7: Create Static External IP Address](#task-7-create-static-external-ip-address)
-- [Task 8: Create Backend Service and Load Balancer](#task-8-create-backend-service-and-load-balancer)
-- [Task 9: Enable Access Logs on Backend Service](#task-9-enable-access-logs-on-backend-service)
-- [Task 10: Verification and Testing](#task-10-verification-and-testing)
-- [Task 11: Simulate Instance Failure](#task-11-simulate-instance-failure)
-- [Task 12: Monitor Load Balancer Logs](#task-12-monitor-load-balancer-logs)
-- [Part 2: Complete Monitoring Setup](#part-2-complete-monitoring-setup)
-  - [Alert 1: High CPU Utilization Alert](#alert-1-high-cpu-utilization-alert)
-  - [Alert 2: HTTP 5xx Error Rate Alert](#alert-2-http-5xx-error-rate-alert)
-  - [Alert 3: Unhealthy Instances Alert](#alert-3-unhealthy-instances-alert)
-  - [Alert 4: Low Instance Count Alert](#alert-4-low-instance-count-alert)
-- [Part 3: Create Monitoring Dashboard](#part-3-create-monitoring-dashboard)
-- [Part 4: Advanced Logging](#part-4-advanced-logging)
-- [Part 5: Uptime Checks](#part-5-uptime-checks)
-- [Part 6: Custom Health Endpoint](#part-6-custom-health-endpoint)
-- [Part 7: Notification Channels](#part-7-notification-channels)
-- [Part 8: Automation Scripts](#part-8-automation-scripts)
-- [Part 9: Testing & Validation](#part-9-testing--validation)
-- [Part 10: Troubleshooting Guide](#part-10-troubleshooting-guide)
-- [Deliverables](#deliverables)
-- [Next Challenge](#next-challenge-optional)
+> **Enterprise-grade GCP Network Load Balancer setup** with security hardening, monitoring, disaster recovery, and full operational documentation.
 
 ---
 
-## Overview
+## 🎯 Executive Summary
 
-This comprehensive guide walks through deploying a **Production-Ready, High-Availability Web Application** on Google Cloud Platform. The solution utilizes a **Managed Instance Group (MIG)** with auto-scaling, an **External Passthrough Network Load Balancer (L4)**, and comprehensive monitoring.
+This guide provides a production-grade, enterprise-level Network Load Balancer setup with best practices, monitoring, security, and disaster recovery. Each step follows a logical ascending order with comprehensive explanations.
 
-### Business Requirement
+---
 
-Your company needs to deploy a highly available web application across multiple zones within the `us-central1` region. The application must:
+## 📋 Pre-Setup Checklist
 
-- Handle production traffic with no single point of failure
-- Support auto-healing of unhealthy instances
-- Use backend services (more advanced than target pools) for better scalability
-- Be accessible via a static public IP with a custom domain (simulated)
-- Include monitoring and logging for operational visibility
+### Prerequisites
 
-### Production Task Configuration
+- Google Cloud Project with billing enabled
+- IAM permissions: **Compute Admin**, **Network Admin**
+- Your office IP address (for SSH restrictions)
+- Domain name *(optional, for SSL)*
+- Understanding of production requirements
 
-| Component | Configuration |
+### Naming Convention Used
+
+**Format:** `{env}-{service}-{component}-{role}`
+
+| Example | Description |
 |---|---|
-| Region | us-central1 |
-| Zones | us-central1-a, us-central1-b, us-central1-f |
-| Instance Template | e2-medium, Debian 12, with Apache startup script |
-| Instance Group | Managed Instance Group (MIG) with auto-scaling (min: 2, max: 5) |
-| Health Check | HTTP health check on port 80 with path `/health` |
-| Backend Service | Backend service with session affinity (Client IP) |
-| Load Balancer Type | External Passthrough Network Load Balancer (L4) |
-| Forwarding Rule | Port 80, static IP |
-| Firewall Rule | Allow HTTP (port 80) from 0.0.0.0/0 |
-| Logging | Enable access logs on the backend service |
+| `prod-web-app-01` | Production web application instance |
+| `prod-nlb-ip` | Production network load balancer IP |
+| `prod-health-check` | Production health check |
 
 ---
 
-## Prerequisites
+## Step 1: Environment Configuration & Planning
 
-### Required APIs
+### 1.1 Set Default Region and Zone
 
-Before starting, ensure these APIs are enabled:
+> **Why this is first:** Establishes the foundation for all resources, prevents misconfiguration, and ensures data residency compliance.
 
-```bash
-gcloud services enable monitoring.googleapis.com
-gcloud services enable logging.googleapis.com
-gcloud services enable cloudtrace.googleapis.com
-gcloud services enable cloudprofiler.googleapis.com
-gcloud services enable cloudscheduler.googleapis.com
-gcloud services enable cloudfunctions.googleapis.com
+**Console Steps:**
+
+1. Navigate to **Compute Engine → Settings**
+2. Configure:
+
+```
+Default Region: us-central1
+Default Zone:   us-central1-a
 ```
 
-### Required Tools
-
-- Google Cloud Console access
-- Cloud Shell or local gcloud CLI installed
-- Project with billing enabled
-- Permissions: Editor or Owner role
+3. Click **Save**
 
 ---
 
-## Task 1: Set Up Project and Region
+### 1.2 Enable Required APIs
 
-### Objective
-
-Configure your Google Cloud project and set the default region and zone for resource deployment.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Google Cloud Console**
-
-1. Open your web browser
-2. Go to: https://console.cloud.google.com
-3. Sign in with your Google account
-
-**Step 2: Select Your Project**
-
-1. Click on the project drop-down at the top of the console
-2. Select your project from the list
-3. Ensure the project name is visible in the top bar
-
-**Step 3: Set Region and Zone**
-
-*Option A: Through Console*
-
-1. Navigate to **Compute Engine > Settings**
-2. Set Region to `us-central1`
-3. Set Zone to `us-central1-a`
-4. Click **Save**
-
-*Option B: Through gcloud CLI*
-
-```bash
-gcloud config set compute/region us-central1
-gcloud config set compute/zone us-central1-a
-```
-
-### Explanation
-
-- **Region**: `us-central1` provides multiple zones for high availability
-- **Zone**: `us-central1-a` is the default zone for resource creation
-- Setting defaults avoids specifying region/zone in every command
-
-### Verification
-
-```bash
-gcloud config list
-```
+1. Navigate to **APIs & Services → Library**
+2. Enable the following APIs:
+   - Compute Engine API
+   - Cloud Monitoring API
+   - Cloud Logging API
+   - Cloud Pub/Sub API *(for alerts)*
 
 ---
 
-## Task 2: Create VPC Network
+### 1.3 Create Service Account *(Optional — for automation)*
 
-### Objective
+1. Navigate to **IAM & Admin → Service Accounts**
+2. Create a Service Account:
+   - **Name:** `prod-nlb-sa`
+   - **Roles:** Compute Admin, Monitoring Editor
+3. Create and download key *(store securely)*
 
-Create a Virtual Private Cloud (VPC) network with a custom subnet for your web application. The VPC provides the internal connectivity for your resources and defines the IP ranges they will use.
+---
 
-### Step-by-Step Instructions
+## Step 2: Network & Security Foundation
 
-**Step 1: Navigate to VPC Networks**
+### 2.1 Create Production Network *(Optional — for isolated network)*
 
-1. Go to **VPC network > VPC networks**
+> **Why:** Provides network isolation for production workloads.
+
+**Console Steps:**
+
+1. Navigate to **VPC Network → VPC Networks**
 2. Click **Create VPC Network**
 
-**Step 2: Configure VPC Network**
-
-- Name: `web-app-network`
-- Subnet Creation Mode: Custom
-- Subnet Name: `web-app-subnet`
-- Region: `us-central1`
-- IP stack type: IPv4 (single-stack)
-- IPv4 range: `10.1.2.0/24`
-- Dynamic routing mode: Regional
-
-**Step 3: Create Network**
-
-1. Click **Add subnet** if not automatically shown
-2. Fill in the subnet details
-3. Click **Create**
-
-### Explanation
-
-- **Custom Subnet**: Provides full control over IP range allocation
-- **IPv4 range**: `10.1.2.0/24` is a standard, non-conflicting range for VMs
-- **Regional routing**: Limits routing information to within the region
-
-### Verification
-
-```bash
-gcloud compute networks describe web-app-network
+```
+Name:                   prod-network
+Subnet creation mode:   Custom
+Subnet:                 prod-subnet-us-central1
+Region:                 us-central1
+IP range:               10.0.0.0/24
 ```
 
 ---
 
-## Task 3: Create Firewall Rules
+### 2.2 Create Firewall Rules *(Security First Approach)*
 
-### Objective
+#### 📌 HTTP Rule — Allow Web Traffic
 
-Create firewall rules to allow HTTP traffic on port 80 to your web application instances.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Firewall**
-
-1. Go to **VPC network > Firewall**
-2. Click **Create Firewall Rule**
-
-**Step 2: Configure Firewall Rule**
-
-- Name: `allow-http-web-app`
-- Target tags: `web-app` (Applies to instances with this network tag)
-- Source IP ranges: `0.0.0.0/0` (Allows traffic from anywhere)
-- Protocols and ports: TCP > 80
-
-**Step 3: Create Rule**
-
-Click **Create**
-
-### Explanation
-
-- **Target tags**: Instances with the `web-app` tag automatically receive this rule
-- **Source IP ranges**: `0.0.0.0/0` allows HTTP access from any IP address
-- **Protocols and ports**: Only TCP port 80 is opened (HTTP)
-
-### Verification
-
-```bash
-gcloud compute firewall-rules describe allow-http-web-app
 ```
+Name:              prod-allow-http
+Description:       Allow HTTP traffic to production web servers
+Network:           default (or prod-network)
+Priority:          1000
+Direction:         Ingress
+Action:            Allow
+Target tags:       prod-http-tag
+Source IP ranges:  0.0.0.0/0
+Protocols/ports:   tcp:80
+```
+
+#### 📌 HTTPS Rule — For Future SSL
+
+```
+Name:              prod-allow-https
+Description:       Allow HTTPS traffic to production web servers
+Network:           default (or prod-network)
+Priority:          1000
+Direction:         Ingress
+Action:            Allow
+Target tags:       prod-http-tag
+Source IP ranges:  0.0.0.0/0
+Protocols/ports:   tcp:443
+```
+
+#### 📌 SSH Rule — Restricted Access (Production Security)
+
+```
+Name:              prod-allow-ssh
+Description:       Allow SSH from authorized management IPs
+Network:           default (or prod-network)
+Priority:          900
+Direction:         Ingress
+Action:            Allow
+Target tags:       prod-http-tag
+Source IP ranges:  YOUR_OFFICE_IP/32, VPN_CIDR
+Protocols/ports:   tcp:22
+```
+
+#### 📌 Health Check Rule — Critical for Load Balancer
+
+```
+Name:              prod-allow-health-check
+Description:       Allow health check probes from Google
+Network:           default (or prod-network)
+Priority:          800
+Direction:         Ingress
+Action:            Allow
+Target tags:       prod-http-tag
+Source IP ranges:  130.211.0.0/22, 35.191.0.0/16
+Protocols/ports:   tcp:80
+```
+
+> **Pro Tip:** Create all firewall rules before instances to ensure they can be accessed immediately.
 
 ---
 
-## Task 4: Create Custom Health Check
+## Step 3: Compute Resources (Web Server Instances)
 
-### Objective
+### 3.1 Create Production-Ready Instances with Enhanced Configuration
 
-Create an HTTP health check that the load balancer uses to verify instance health and route traffic only to healthy instances.
+#### Instance 1: `prod-web-app-01` (Primary Zone)
 
-### Step-by-Step Instructions
+**Console Steps:**
 
-**Step 1: Navigate to Health Checks**
+1. Navigate to **Compute Engine → VM Instances**
+2. Click **Create Instance**
 
-1. Go to **Compute Engine > Health Checks**
-2. Click **Create Health Check**
+**Basic Configuration:**
 
-**Step 2: Configure Health Check**
-
-| Field | Value |
-|---|---|
-| Name | http-health-check |
-| Protocol | HTTP |
-| Port | 80 |
-| Request Path | /health |
-| Check interval | 5 seconds |
-| Timeout | 5 seconds |
-| Healthy threshold | 2 |
-| Unhealthy threshold | 2 |
-
-**Step 3: Create Health Check**
-
-Click **Create**
-
-### Explanation
-
-- **Request Path**: `/health` - A custom endpoint that returns a simple "Healthy" message
-- **Check interval**: 5 seconds - How often health checks are performed
-- **Timeout**: 5 seconds - Maximum time to wait for a response
-- **Healthy threshold**: 2 - Number of consecutive successful checks before marking instance healthy
-- **Unhealthy threshold**: 2 - Number of consecutive failures before marking instance unhealthy
-
-### Verification
-
-```bash
-gcloud compute health-checks describe http-health-check
+```
+Name:           prod-web-app-01
+Region:         us-central1
+Zone:           us-central1-a
+Machine Type:   e2-standard-2 (2 vCPU, 8GB RAM)
+Boot Disk:      Debian 12 (64-bit)
+Disk Size:      50 GB
+Disk Type:      pd-standard
 ```
 
----
+**Advanced Options — Networking:**
 
-## Task 5: Create Instance Template
+```
+Network tags:          prod-http-tag, prod-web-server
+Hostname:              prod-web-app-01.prod.internal
+Network Service Tier:  Premium
+```
 
-### Objective
+**Labels (for cost tracking):**
 
-Create an instance template that defines the "blueprint" for every VM in your Managed Instance Group, including the OS, machine type, and startup script.
+```
+environment:  production
+application:  web-server
+version:      v1.0.0
+managed-by:   terraform
+cost-center:  prod-ops
+```
 
-### Step-by-Step Instructions
+**Management:**
 
-**Step 1: Navigate to Instance Templates**
+```
+Startup script:      (see below)
+Deletion protection: Enabled
+Preemptibility:      None (production)
+```
 
-1. Go to **Compute Engine > Instance Templates**
-2. Click **Create Instance Template**
-
-**Step 2: Configure Basic Settings**
-
-- Name: `web-app-template`
-- Machine type: `e2-medium`
-- Boot disk: Change > Select Debian 12 (size: 20GB)
-- Firewall: Check "Allow HTTP traffic" (This alone is not enough; our tag-based rule is more controlled)
-
-**Step 3: Configure Networking**
-
-Under **Advanced Options > Networking**:
-
-- Network tags: `web-app` (Links VMs to the firewall rule we created)
-
-**Step 4: Configure Startup Script**
-
-Under **Advanced Options > Management**:
-
-Startup script: Add the following:
+**Startup Script — Enhanced with Monitoring:**
 
 ```bash
 #!/bin/bash
-apt-get update
-apt-get install apache2 -y
-service apache2 restart
-mkdir -p /var/www/html
-echo "<h1>Production Web Server: $(hostname)</h1>" | tee /var/www/html/index.html
-echo "Healthy" > /var/www/html/health
-```
-
-**Step 5: Create Template**
-
-Click **Create**
-
-### Explanation
-
-- **Machine type**: `e2-medium` - Balanced cost-performance for production workloads
-- **Debian 12**: Popular, stable Linux distribution
-- **Startup script**: Installs and configures Apache web server, creates HTML page with hostname, and creates health check endpoint
-- **Network tag**: `web-app` - Ensures the firewall rule applies to these instances
-
-### Verification
-
-```bash
-gcloud compute instance-templates describe web-app-template
-```
-
----
-
-## Task 6: Create Managed Instance Group (MIG)
-
-### Objective
-
-Create a Managed Instance Group that manages your VMs, provides auto-scaling, and automatically recreates unhealthy instances.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Instance Groups**
-
-1. Go to **Compute Engine > Instance Groups**
-2. Click **Create Instance Group**
-
-**Step 2: Configure Instance Group**
-
-- Name: `web-app-mig`
-- Location: Choose Multiple zones
-- Zones: `us-central1-a`, `us-central1-b`, `us-central1-f`
-- Instance template: Select `web-app-template`
-
-**Step 3: Configure Auto-Scaling**
-
-- Autoscaling: Enable
-- Min instances: 2
-- Max instances: 5
-- Target CPU utilization: 70
-
-**Step 4: Configure Health Check**
-
-- Health Check: Select `http-health-check`
-- Initial delay: 60 seconds
-
-**Step 5: Create MIG**
-
-Click **Create**
-
-### Explanation
-
-- **Multiple zones**: Distributes instances across three zones for high availability
-- **Auto-scaling**: Automatically adjusts instance count based on CPU utilization
-- **Min/Max**: Maintains at least 2 instances, scales up to 5 when needed
-- **Target CPU**: Triggers scaling when average CPU usage exceeds 70%
-- **Initial delay**: Gives instances time to fully start before health checks begin
-
-### Verification
-
-```bash
-gcloud compute instance-groups managed describe web-app-mig --region us-central1
-```
-**List Instances**
-
-```bash
-gcloud compute instance-groups managed list-instances web-app-mig --region us-central1
-```
-
----
-
-## Task 7: Create Static External IP Address
-
-### Objective
-
-Reserve a static external IP address that will remain stable even if load balancer is recreated.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to External IP Addresses**
-
-1. Go to **VPC network > External IP addresses**
-2. Click **Reserve Static Address**
-
-**Step 2: Configure IP Address**
-
-- Name: `web-app-ip`
-- Region: `us-central1`
-- Type: Regional
-- Attached to: None
-
-**Step 3: Reserve IP**
-
-1. Click **Reserve**
-2. Copy the IP address that appears
-
-### Explanation
-
-- **Static IP**: Prevents IP address changes if resources are recreated
-- **Regional**: The IP is tied to the region, not a specific resource
-- **Not attached**: The IP will be attached to the load balancer in the next task
-
-### Verification
-
-```bash
-gcloud compute addresses describe web-app-ip --region us-central1
-```
-
----
-
-## Task 8: Create Backend Service and Load Balancer
-
-### Objective
-
-Create an External Passthrough Network Load Balancer (L4) with a Backend Service that provides advanced features like session affinity and logging.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Load Balancing**
-
-1. Go to **Network Services > Load Balancing**
-2. Click **Create Load Balancer**
-
-**Step 2: Select Load Balancer Type**
-
-1. Under **Network Load Balancer (TCP/UDP/SSL)**, click **Start Configuration**
-2. Select **From Internet to my VMs**
-3. Click **Continue**
-
-**Step 3: Configure Backend Service**
-
-- Name: `web-app-backend`
-- Region: `us-central1`
-- Backend type: Instance group
-- Instance group: `web-app-mig`
-- Port: 80
-- Health check: `http-health-check`
-- Session affinity: Client IP (This provides stickiness for user sessions)
-
-**Step 4: Configure Frontend**
-
-- Name: `web-app-frontend`
-- IP address: Select `web-app-ip` (reserved earlier)
-- Port: 80
-
-**Step 5: Create Load Balancer**
-
-Click **Create**
-
-### Explanation
-
-- **Session affinity**: Client IP ensures users stick to the same backend instance
-- **Backend Service**: More advanced than target pools, offers better features
-- **Passthrough**: L4 load balancer preserves client IP and forwards packets directly
-- **Port 80**: HTTP traffic only (can be extended to HTTPS later)
-
-### Verification
-
-```bash
-gcloud compute backend-services describe web-app-backend --region us-central1
-```
-**Check Health Status**
-
-```bash
-gcloud compute backend-services get-health web-app-backend --region us-central1
-```
-
----
-
-## Task 9: Enable Access Logs on Backend Service
-
-### Objective
-
-Enable access logging on the backend service to capture all incoming requests for monitoring and troubleshooting.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Load Balancer**
-
-1. Go to **Network Services > Load Balancing**
-2. Click on `web-app-backend`
-
-**Step 2: Edit Backend Configuration**
-
-1. Under **Backend configuration**, click the pencil icon (Edit)
-2. Check **Enable Logging**
-3. Sample rate: `1.0` (logs 100% of requests)
-4. Click **Save**
-
-### Explanation
-
-- **Logging**: Enables detailed request logging
-- **Sample rate**: `1.0` means all requests are logged
-- Lower rates (0.5) can reduce logging costs in high-traffic environments
-
-### Verification
-
-```bash
-gcloud compute backend-services describe web-app-backend --region us-central1 --format="value(logConfig)"
-```
-
----
-
-## Task 10: Verification and Testing
-
-### Objective
-
-Verify the load balancer is working correctly by accessing the web application and testing load balancing.
-
-### Step-by-Step Instructions
-
-**Step 1: Get Load Balancer Frontend IP**
-
-1. Go to **Network Services > Load Balancing**
-2. Find `web-app-backend`
-3. Copy the Frontend IP address (same as the static IP)
-
-**Step 2: Test Web Application**
-
-Open a browser and enter: `http://YOUR_STATIC_IP`
-
-**Step 3: Test Load Balancing**
-
-Refresh the page multiple times and observe the hostname changing.
-
-### Explanation
-
-- **Load Balancing**: Each request may go to a different backend instance
-- **Session Affinity**: When enabled, requests from the same client IP go to the same instance
-
-### Verification Commands
-
-```bash
-# Test multiple times to see load balancing
-for i in {1..10}; do
-    curl http://YOUR_STATIC_IP/ | grep "Production Web Server"
-    sleep 1
-done
-```
-
----
-
-## Task 11: Simulate Instance Failure
-
-### Objective
-
-Test auto-healing by stopping or deleting an instance and verifying MIG automatically recreates it.
-
-### Step-by-Step Instructions
-
-**Step 1: Identify an Instance**
-
-```bash
-gcloud compute instance-groups managed list-instances web-app-mig --region us-central1
-```
-
-**Step 2: Stop or Delete the Instance**
-
-*Option A: Stop Instance*
-
-1. Go to **Compute Engine > VM instances**
-2. Find one of the instances in the MIG (they have random names)
-3. Click **Stop**
-4. Wait for the instance to stop
-
-*Option B: Delete Instance*
-
-```bash
-INSTANCE_NAME=$(gcloud compute instance-groups managed list-instances web-app-mig --region us-central1 --format="value(name)" | head -1)
-gcloud compute instance-groups managed delete-instances web-app-mig --instances=$INSTANCE_NAME --region us-central1
-```
-
-**Step 3: Watch Auto-Healing**
-
-1. Go to **Compute Engine > Instance Groups**
-2. Click on `web-app-mig`
-3. Observe the MIG automatically creating a new instance
-
-### Explanation
-
-- **Auto-Healing**: The health check detects unhealthy instances
-- **Recreation**: MIG automatically deletes unhealthy instances and creates new ones
-- **Maintenance**: Ensures the desired instance count is always maintained
-
-### Verification
-
-```bash
-# Monitor instance count and status
-watch -n 2 'gcloud compute instance-groups managed list-instances web-app-mig --region us-central1'
-```
-
-**Expected Result**
-
-After deletion:
-
-```text
-NAME               ZONE            STATUS   HEALTH_STATE
-web-app-mig-xxxx   us-central1-a   STOPPING UNHEALTHY
-web-app-mig-yyyy   us-central1-b   RUNNING  HEALTHY
-```
-
-After auto-healing (2-3 minutes):
-
-```text
-NAME               ZONE            STATUS   HEALTH_STATE
-web-app-mig-xxxx   us-central1-a   RUNNING  HEALTHY
-web-app-mig-yyyy   us-central1-b   RUNNING  HEALTHY
-web-app-mig-zzzz   us-central1-f   RUNNING  HEALTHY
-```
-
----
-
-## Task 12: Monitor Load Balancer Logs
-
-### Objective
-
-View load balancer access logs in Logs Explorer for operational visibility.
-
-### Step-by-Step Instructions
-
-**Step 1: Navigate to Logs Explorer**
-
-1. Go to **Logging > Logs Explorer**
-2. In the query pane, enter the following:
-
-```text
-resource.type="http_load_balancer"
-```
-
-3. Click **Run Query**
-
-**Step 2: Filter for Specific Backend**
-
-```text
-resource.type="http_load_balancer"
-jsonPayload.backendName="web-app-backend"
-```
-
-**Step 3: Filter for Specific Time Range**
-
-```text
-resource.type="http_load_balancer"
-timestamp > "-1h"
-```
-
-### Explanation
-
-- **Logs Explorer**: Central logging service for viewing and querying logs
-- **Resource type**: `http_load_balancer` - Specific to load balancer logs
-- **Query**: Filter logs by backend name and time range
-
-### Example Log Entry
-
-```json
-{
-  "insertId": "abc123def456",
-  "jsonPayload": {
-    "@type": "type.googleapis.com/google.cloud.loadbalancing.type.LoadBalancerLogEntry",
-    "backendName": "web-app-backend",
-    "statusDetails": "http_200",
-    "request": {
-      "method": "GET",
-      "url": "/",
-      "host": "34.123.45.67"
-    },
-    "latency": "0.123s",
-    "response": {
-      "code": 200,
-      "size": 1234
-    },
-    "remoteIp": "192.168.1.1"
-  },
-  "resource": {
-    "type": "http_load_balancer",
-    "labels": {
-      "backend_service_name": "web-app-backend",
-      "project_id": "your-project"
-    }
-  },
-  "timestamp": "2026-06-18T10:30:45.123Z"
-}
-```
-
-### Verification
-
-```bash
-gcloud logging read 'resource.type="http_load_balancer"' --limit=10
-```
-
----
-
-## Part 2: Complete Monitoring Setup
-
-This section covers comprehensive monitoring for your production web application, from basic health checks to advanced alerting.
-
-### Alert 1: High CPU Utilization Alert
-
-#### Objective
-
-Create an alert that triggers when instance CPU utilization exceeds 80%, indicating potential overload.
-
-#### Step-by-Step Instructions
-
-**Step 1: Navigate to Alerting**
-
-1. Go to **Monitoring > Alerting**
-2. Click **+ CREATE POLICY**
-
-**Step 2: Add Condition**
-
-1. Click **ADD CONDITION**
-2. Resource type: GCE VM Instance
-3. Metric: `instance/cpu/utilization`
-4. Filter: Click **Add Filter**
-   - Field: `instance_group_name`
-   - Operator: `=`
-   - Value: `web-app-mig`
-5. Time Series Aggregation:
-   - Aligner: mean
-   - Period: 1 minute
-6. Condition Type: Threshold
-7. Threshold Value: 0.8 (80%)
-8. Trigger: Any time series violates the threshold
-9. Duration: 1 minute
-
-**Step 3: Configure Alert**
-
-- Name: `High CPU Alert - Web App`
-- Severity Level: Critical
-
-**Step 4: Add Documentation**
-
-```markdown
-## Troubleshooting Steps:
-
-1. Check which instance is experiencing high CPU:
-   - Navigate to Compute Engine > VM Instances
-   - Sort by CPU usage
-
-2. Investigate the process:
-   - SSH into the affected instance
-   - Run: `top` or `htop` to see processes
-
-3. Check application logs:
-   - Go to Logging > Logs Explorer
-   - Filter by: `instance_name="INSTANCE_NAME"`
-
-4. Consider scaling:
-   - If persistent, increase max instances to 7
-   - Or upgrade to e2-standard-2
-
-## Auto-Healing:
-- MIG will automatically recreate unhealthy instances
-- Check if instance has been recreated in last 5 minutes
-```
-
-**Step 5: Configure Notifications**
-
-1. Click **ADD NOTIFICATION CHANNEL**
-2. Select Email
-3. Enter: `your-email@company.com`
-4. Click **OK**
-
-**Step 6: Save**
-
-Click **CREATE POLICY**
-
-#### Explanation
-
-- **Threshold**: 80% CPU indicates the instance is overloaded
-- **Duration**: Must exceed threshold for 1 minute before alerting
-- **Filter**: Only monitors instances in the MIG
-- **Trigger**: Any single instance exceeding threshold triggers an alert
-
-#### Verification
-
-```bash
-gcloud monitoring alert-policies list --filter="displayName='High CPU Alert - Web App'"
-```
-
----
-
-### Alert 2: HTTP 5xx Error Rate Alert
-
-#### Objective
-
-Create an alert that triggers when HTTP 5xx errors exceed 5% of total traffic, indicating application failures.
-
-#### Step-by-Step Instructions
-
-**Step 1: Create New Alert Policy**
-
-Click **+ CREATE POLICY**
-
-**Step 2: Add Condition**
-
-- Resource type: HTTP(S) Load Balancer
-- Metric: `loadbalancing.googleapis.com/https/request_count`
-- Filter: Add two filters:
-  - Filter 1: `response_code_class = 5xx`
-  - Filter 2: `backend_name = "web-app-backend"`
-- Time Series Aggregation:
-  - Aligner: rate
-  - Period: 2 minutes
-- Condition Type: Threshold
-- Threshold Value: 0.05 (5%)
-- Duration: 2 minutes
-- Trigger: Any time series
-
-**Step 3: Advanced Configuration**
-
-Click **SHOW ADVANCED OPTIONS**:
-
-- Metric Type: DELTA
-- Units: `{requests}/s`
-
-**Step 4: Configure Alert**
-
-- Name: `High 5xx Errors - Web App`
-- Severity Level: Critical
-
-**Step 5: Add Documentation**
-
-```markdown
-## Immediate Actions:
-
-1. Check application logs:
-   - Query: `resource.type="http_load_balancer" AND severity>=ERROR`
-
-2. Check instance health:
-   - `gcloud compute instance-groups managed list-instances web-app-mig`
-
-3. Check backend service:
-   - `gcloud compute backend-services get-health web-app-backend`
-
-4. Recent changes?
-   - Check if new code was deployed
-   - Verify environment variables
-```
-
-**Step 6: Configure Notifications**
-
-Add email and/or PagerDuty notification channels
-
-**Step 7: Save**
-
-Click **CREATE POLICY**
-
-#### Explanation
-
-- **Rate**: Converts raw counts to rate (requests per second)
-- **5% threshold**: Unacceptable error rate for production
-- **2-minute duration**: Avoids false positives from transient errors
-
-#### Verification
-
-```bash
-gcloud monitoring alert-policies list --filter="displayName='High 5xx Errors - Web App'"
-```
-
----
-
-### Alert 3: Unhealthy Instances Alert
-
-#### Objective
-
-Detect when auto-healing is failing or too many instances are unhealthy.
-
-#### Step-by-Step Instructions
-
-**Step 1: Create New Alert Policy**
-
-Click **+ CREATE POLICY**
-
-**Step 2: Add Condition**
-
-- Resource type: GCE Instance Group
-- Metric: `instance_group/unhealthy_instances`
-- Filter: Add filter:
-  - Field: `instance_group_name`
-  - Operator: `=`
-  - Value: `web-app-mig`
-- Time Series Aggregation:
-  - Aligner: mean
-  - Period: 1 minute
-- Threshold Value: 1
-- Duration: 2 minutes
-
-**Step 3: Configure Alert**
-
-- Name: `Unhealthy Instances Detected`
-- Severity Level: Warning
-
-**Step 4: Add Documentation**
-
-```markdown
-## Investigation Steps:
-
-1. Check individual instance health:
-   - List instances: `gcloud compute instance-groups managed list-instances web-app-mig`
-
-2. Check health check:
-   - Navigate to Compute Engine > Health Checks
-   - Verify http-health-check is responding
-
-3. Check instance logs:
-   - Look for startup script errors
-   - Check if Apache is running
-
-4. Verify firewall rules:
-   - Ensure allow-http-web-app is correctly configured
-```
-
-**Step 5: Configure Notifications**
-
-Add email notification channel
-
-**Step 6: Save**
-
-Click **CREATE POLICY**
-
-#### Explanation
-
-- **Unhealthy instances**: Instances failing the health check
-- **Threshold > 1**: More than one unhealthy instance triggers alert
-- **Duration**: 2 minutes to confirm persistent issue
-
-#### Verification
-
-```bash
-gcloud monitoring alert-policies list --filter="displayName='Unhealthy Instances Detected'"
-```
-
----
-
-### Alert 4: Low Instance Count Alert
-
-#### Objective
-
-Ensure minimum availability by alerting when instance count drops below the minimum.
-
-#### Step-by-Step Instructions
-
-**Step 1: Create New Alert Policy**
-
-Click **+ CREATE POLICY**
-
-**Step 2: Add Condition**
-
-- Resource type: GCE Instance Group
-- Metric: `instance_group/current_size`
-- Filter: `instance_group_name = "web-app-mig"`
-- Threshold Value: < 2
-- Duration: 3 minutes
-
-**Step 3: Configure Alert**
-
-- Name: `Low Instance Count - Below Minimum`
-- Severity Level: Critical
-
-**Step 4: Add Documentation**
-
-```markdown
-## Investigation Steps:
-
-1. Check MIG status:
-   - `gcloud compute instance-groups managed describe web-app-mig`
-
-2. Check auto-scaling logs:
-   - Query: `resource.type="gce_instance_group" AND textPayload:"autoscaling"`
-
-3. Verify quota:
-   - Check if project has sufficient instance quota
-
-4. Check for zone issues:
-   - Verify all three zones are operational
-```
-
-**Step 5: Save**
-
-Click **CREATE POLICY**
-
-#### Explanation
-
-- **Current_size**: Number of running instances in the MIG
-- **< 2**: Below the minimum configured instances
-- **3-minute duration**: Accounts for instance startup time
-
-#### Verification
-
-```bash
-gcloud monitoring alert-policies list --filter="displayName='Low Instance Count - Below Minimum'"
-```
-
----
-
-## Part 3: Create Monitoring Dashboard
-
-### Objective
-
-Create a comprehensive monitoring dashboard with multiple widgets for real-time visibility into application health and performance.
-
-### Step-by-Step Instructions
-
-**Step 1: Create Main Dashboard**
-
-1. Navigate: **Monitoring > Dashboards**
-2. Click **+ CREATE DASHBOARD**
-3. Name: `Web App Production Dashboard`
-4. Click **SAVE**
-
-**Step 2: Add Widgets**
-
-#### Widget 1: CPU Utilization - All Instances
-
-1. Click **ADD WIDGET**
-2. Select Line Chart
-3. Configuration:
-   - Metric: `instance/cpu/utilization`
-   - Filter: `instance_group = "web-app-mig"`
-   - Aggregation:
-     - Aligner: mean
-     - Period: 1 minute
-   - Group By: `instance_name`
-   - Title: `CPU Usage - All Instances`
-   - Y-Axis Label: `CPU %`
-4. Click **SAVE**
-
-#### Widget 2: Instance Count
-
-1. Click **ADD WIDGET**
-2. Select Stacked Bar
-3. Configuration:
-   - Metric: `instance_group/current_size`
-   - Filter: `instance_group_name = "web-app-mig"`
-   - Aggregation:
-     - Aligner: sum
-     - Period: 1 minute
-   - Title: `Running Instances (Min: 2, Max: 5)`
-   - Y-Axis Label: `Number of Instances`
-4. Click **SAVE**
-
-#### Widget 3: Healthy Backend Instances
-
-1. Click **ADD WIDGET**
-2. Select Single Stat
-3. Configuration:
-   - Metric: `loadbalancing.googleapis.com/https/backend_healthy`
-   - Filter: `backend_name = "web-app-backend"`
-   - Aggregation: sum
-   - Title: `Healthy Backend Instances`
-   - Format: Number
-   - Thresholds:
-     - Green: > 1
-     - Yellow: = 1
-     - Red: < 1
-4. Click **SAVE**
-
-#### Widget 4: Total Request Rate
-
-1. Click **ADD WIDGET**
-2. Select Line Chart
-3. Configuration:
-   - Metric: `loadbalancing.googleapis.com/https/request_count`
-   - Filter: `backend_name = "web-app-backend"`
-   - Aggregation:
-     - Aligner: rate
-     - Period: 1 minute
-   - Group By: `project`
-   - Title: `Requests Per Second (QPS)`
-   - Y-Axis Label: `Requests/sec`
-4. Click **SAVE**
-
-#### Widget 5: HTTP Response Codes
-
-1. Click **ADD WIDGET**
-2. Select Stacked Bar
-3. Configuration:
-   - Metric: `loadbalancing.googleapis.com/https/request_count`
-   - Filter: `backend_name = "web-app-backend"`
-   - Aggregation:
-     - Aligner: sum
-     - Period: 1 minute
-   - Group By: `response_code_class`
-   - Title: `HTTP Response Codes Distribution`
-   - Y-Axis Label: `Requests`
-4. Click **SAVE**
-
-#### Widget 6: Backend Latency P99
-
-1. Click **ADD WIDGET**
-2. Select Line Chart
-3. Configuration:
-   - Metric: `loadbalancing.googleapis.com/https/backend_latencies`
-   - Filter: `backend_name = "web-app-backend"`
-   - Aggregation:
-     - Aligner: p99
-     - Period: 1 minute
-   - Title: `Backend Latency - P99`
-   - Y-Axis Label: `Latency (ms)`
-   - Thresholds:
-     - Yellow: > 1000ms
-     - Red: > 3000ms
-4. Click **SAVE**
-
-#### Widget 7: Network Traffic
-
-1. Click **ADD WIDGET**
-2. Select Line Chart
-3. Configuration:
-   - Metric: `instance/network/received_packets`
-   - Filter: `instance_group = "web-app-mig"`
-   - Group By: `instance_name`
-   - Title: `Network Incoming Traffic`
-4. Click **SAVE**
-
-#### Widget 8: Logs Panel (Recent Errors)
-
-1. Click **ADD WIDGET**
-2. Select Logs Panel
-3. Configuration:
-   - Query:
-
-```text
-resource.type="http_load_balancer" 
-severity>=ERROR
-```
-
-   - Time Range: Last 15 minutes
-   - Title: `Recent Load Balancer Errors`
-4. Click **SAVE**
-
-### Explanation
-
-- **Dashboard Widgets**: Provide at-a-glance visibility into system health
-- **Single Stat**: Shows current status of key metrics
-- **Line Charts**: Show trends over time
-- **Stacked Bars**: Show composition (e.g., HTTP codes by class)
-- **Logs Panel**: Shows real-time error logs
-
-### Verification
-
-```bash
-# View dashboard URL
-gcloud monitoring dashboards list --filter="displayName='Web App Production Dashboard'"
-```
-
----
-
-## Part 4: Advanced Logging
-
-### Step 1: Enable Access Logs
-
-#### Step-by-Step Instructions
-
-1. Navigate: **Network Services > Load Balancing**
-2. Click on `web-app-backend`
-3. Click **EDIT** (pencil icon)
-4. Under Backend configuration:
-   - Check **Enable Logging**
-   - Sample rate: `1.0` (100% of requests)
-5. Click **SAVE**
-
-#### Explanation
-
-- **Sample rate**: `1.0` means all requests are logged
-- **Enable Logging**: Captures detailed request metadata
-
-### Step 2: Create Log-Based Metrics
-
-#### Metric 1: Slow Request Count (>1 second)
-
-**Step-by-Step Instructions:**
-
-1. Navigate: **Logging > Logs Explorer**
-2. Enter query:
-
-```text
-resource.type="http_load_balancer"
-jsonPayload.latency>1s
-backend_name="web-app-backend"
-```
-
-3. Click **CREATE METRIC** (above the query bar)
-4. Configure:
-   - Name: `slow-requests`
-   - Type: Counter
-   - Description: `Counts requests taking more than 1 second`
-   - Label Fields: `backend_name`
-5. Click **CREATE METRIC**
-
-#### Metric 2: 5xx Error Count
-
-1. In Logs Explorer, enter:
-
-```text
-resource.type="http_load_balancer"
-jsonPayload.statusDetails="http_5xx"
-backend_name="web-app-backend"
-```
-
-2. Click **CREATE METRIC**
-3. Name: `http-5xx-errors`
-4. Type: Counter
-5. Description: `Counts 5xx errors from load balancer`
-6. Click **CREATE METRIC**
-
-### Step 3: Saved Queries for Quick Access
-
-**Query 1: HTTP 5xx Errors**
-
-```sql
-resource.type="http_load_balancer"
-severity>=ERROR
-jsonPayload.statusDetails="http_5xx"
-backend_name="web-app-backend"
-```
-
-**Query 2: Slow Requests**
-
-```sql
-resource.type="http_load_balancer"
-jsonPayload.latency>1s
-backend_name="web-app-backend"
-```
-
-**Query 3: Production Traffic Overview**
-
-```sql
-resource.type="http_load_balancer"
-backend_name="web-app-backend"
-timestamp>="-1h"
-```
-
-**Query 4: Instance Startup Issues**
-
-```sql
-resource.type="gce_instance"
-resource.labels.instance_group="web-app-mig"
-textPayload:"error" OR textPayload:"failed"
-```
-
-### Step 4: Create Custom Sinks (Optional)
-
-To export logs to BigQuery for long-term analysis:
-
-1. Navigate: **Logging > Logs Router**
-2. Click **CREATE SINK**
-3. Name: `web-app-logs-to-bigquery`
-4. Sink Destination: BigQuery dataset
-5. Select Dataset: Create new or select existing
-6. Build Inclusion Filter:
-
-```text
-resource.type="http_load_balancer"
-OR resource.type="gce_instance"
-```
-
-7. Click **CREATE SINK**
-
-### Explanation
-
-- **Log-based Metrics**: Allow you to create custom metrics from log data
-- **Saved Queries**: Quick access to common troubleshooting queries
-- **Sinks**: Export logs to BigQuery for long-term storage and analysis
-
-### Verification
-
-```bash
-# View logs for the last hour
-gcloud logging read 'resource.type="http_load_balancer" AND timestamp > "-1h"' --limit=10
-
-# Check log-based metrics
-gcloud logging metrics list
-```
-
----
-
-## Part 5: Uptime Checks
-
-### Objective
-
-Create uptime checks to verify application availability from multiple geographic regions.
-
-### Step-by-Step Instructions
-
-**Step 1: Create Uptime Check**
-
-1. Navigate: **Monitoring > Uptime Checks**
-2. Click **CREATE UPTIME CHECK**
-3. Configure:
-   - Protocol: HTTP
-   - Hostname: `YOUR_STATIC_IP_ADDRESS`
-   - Path: `/health`
-   - Check Frequency: 1 minute
-   - Regions: Select at least 3:
-     - North America (Iowa)
-     - Europe (Belgium)
-     - Asia Pacific (Mumbai)
-4. Advanced Options:
-   - Request Method: GET
-   - Expected Response Code: 200
-   - Headers: None required
-   - Body: No validation needed
-5. Alert Configuration:
-   - Click **ADD ALERT**
-   - Duration: 2 minutes
-   - Notifications: Add your email
-   - Name: `Web App Production Uptime`
-6. Click **CREATE**
-
-**Step 2: Verify Uptime Check**
-
-1. Wait 5 minutes for first check
-2. View in **Monitoring > Uptime Checks**
-3. Should show Green (Healthy) status
-
-### Explanation
-
-- **Uptime Checks**: Monitor application availability from multiple locations
-- **Frequency**: Every minute ensures quick detection of failures
-- **Regions**: Multiple regions detect regional network issues
-- **Alert Duration**: 2 minutes prevents false positives
-
-### Verification
-
-```bash
-# List uptime checks
-gcloud monitoring uptime-checks list --filter="displayName='Web App Production Uptime'"
-```
-
----
-
-## Part 6: Custom Health Endpoint
-
-### Objective
-
-Create a more sophisticated health endpoint that provides detailed system health information.
-
-### Option A: Update Instance Template (Recommended)
-
-1. Navigate: **Compute Engine > Instance Templates**
-2. Select `web-app-template`
-3. Click **CREATE SIMILAR**
-4. Name: `web-app-template-v2`
-5. Under **Management > Startup Script**, replace with:
-
-```bash
-#!/bin/bash
+# Production Web Server Setup Script
+# Version: 1.0.0
+
+set -e
+
+echo "========================================="
+echo "Starting Production Web Server Setup"
+echo "Instance: prod-web-app-01"
+echo "Zone: us-central1-a"
+echo "Timestamp: $(date)"
+echo "========================================="
 
 # Update system
 apt-get update
-apt-get install apache2 php python3 -y
+apt-get upgrade -y
+
+# Install web server
+apt-get install apache2 -y
+apt-get install curl wget htop nethogs -y
 
 # Configure Apache
+cat > /etc/apache2/conf-available/security.conf << EOF
+ServerTokens Prod
+ServerSignature Off
+TraceEnable Off
+EOF
+a2enconf security
+
+# Start and enable Apache
 systemctl enable apache2
 systemctl start apache2
 
-# Create web root
-mkdir -p /var/www/html
+# Create health check endpoint (for advanced monitoring)
+mkdir -p /var/www/html/health
+cat > /var/www/html/health/check << EOF
+OK
+EOF
 
-# Create index page
-cat > /var/www/html/index.html << 'EOF'
+# Create main web page
+cat > /var/www/html/index.html << EOF
 <!DOCTYPE html>
-<html>
-<head><title>Production Web Server</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Server 01</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37);
+            text-align: center;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .detail {
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
 <body>
-<h1>Production Web Server: $(hostname)</h1>
-<p>Zone: $(curl -s http://metadata.google.internal/computeMetadata/v1/instance/zone -H "Metadata-Flavor: Google" | cut -d/ -f4)</p>
-<p>Instance ID: $(curl -s http://metadata.google.internal/computeMetadata/v1/instance/id -H "Metadata-Flavor: Google")</p>
-<p>Status: Healthy</p>
+    <div class="container">
+        <div class="badge">✅ PRODUCTION</div>
+        <h1>🚀 Web Server: prod-web-app-01</h1>
+        <div class="detail">
+            <p><strong>🔹 Environment:</strong> Production</p>
+            <p><strong>🔹 Zone:</strong> us-central1-a</p>
+            <p><strong>🔹 Hostname:</strong> $(hostname)</p>
+            <p><strong>🔹 Server IP:</strong> $(hostname -I | cut -d' ' -f1)</p>
+            <p><strong>🔹 Status:</strong> 🟢 Healthy</p>
+            <p><strong>🔹 Version:</strong> v1.0.0</p>
+        </div>
+    </div>
 </body>
 </html>
 EOF
 
-# Create health.php with comprehensive checks
-cat > /var/www/html/health.php << 'EOF'
-<?php
-header('Content-Type: application/json');
+# Set proper permissions
+chown -R www-data:www-data /var/www/html/
+chmod -R 755 /var/www/html/
 
-// System checks
-$status = [
-    'status' => 'healthy',
-    'timestamp' => date('Y-m-d H:i:s'),
-    'hostname' => gethostname(),
-    'zone' => file_get_contents('http://metadata.google.internal/computeMetadata/v1/instance/zone', false, stream_context_create(['http' => ['header' => "Metadata-Flavor: Google\n"]])),
-    'uptime' => shell_exec('uptime -p'),
-    'load_avg' => sys_getloadavg(),
-    'memory_usage_mb' => round(memory_get_usage() / 1024 / 1024, 2),
-    'disk_usage_percent' => round((disk_free_space('/') / disk_total_space('/')) * 100, 2)
-];
-
-// Check Apache service
-$apache_status = shell_exec('systemctl is-active apache2');
-$status['apache_active'] = trim($apache_status) === 'active';
-
-// Check if web root is writable
-$status['web_root_writable'] = is_writable('/var/www/html');
-
-// Overall health
-if (!$status['apache_active'] || !$status['web_root_writable']) {
-    $status['status'] = 'unhealthy';
-    http_response_code(503);
-} else {
-    http_response_code(200);
+# Configure log rotation
+cat > /etc/logrotate.d/apache2-prod << EOF
+/var/log/apache2/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 640 www-data adm
+    sharedscripts
+    postrotate
+        systemctl reload apache2
+    endscript
 }
-
-echo json_encode($status, JSON_PRETTY_PRINT);
-?>
 EOF
 
-# Create simple health endpoint
-echo "OK" > /var/www/html/health
-
-# Set permissions
-chown -R www-data:www-data /var/www/html
-
-# Restart Apache
-systemctl restart apache2
+echo "========================================="
+echo "Production Web Server Setup Complete!"
+echo "Instance: prod-web-app-01"
+echo "========================================="
 ```
-
-6. Click **CREATE**
-
-### Option B: Update Health Check Path
-
-1. Navigate: **Compute Engine > Health Checks**
-2. Edit `http-health-check`
-3. Request Path: Change from `/health` to `/health.php`
-4. Click **SAVE**
-
-### Step 2: Update MIG to Use New Template
-
-1. Navigate: **Compute Engine > Instance Groups**
-2. Click on `web-app-mig`
-3. Click **EDIT**
-4. Instance template: Select `web-app-template-v2`
-5. Update Policy:
-   - Update type: Rolling update
-   - Max surge: 1
-   - Max unavailable: 0
-6. Click **SAVE**
-
-### Step 3: Test Health Endpoint
-
-```bash
-# Test from Cloud Shell
-curl http://YOUR_STATIC_IP/health.php
-```
-
-### Explanation
-
-- **Detailed health**: Provides system metrics in the health check
-- **JSON output**: Easy to parse and monitor
-- **Status code**: 200 for healthy, 503 for unhealthy
-- **Multiple checks**: Apache status, disk space, memory usage
 
 ---
 
-## Part 7: Notification Channels
+#### Instance 2: `prod-web-app-02`
 
-### Step 1: Email Notifications
+```
+Name:   prod-web-app-02
+Zone:   us-central1-b
+Note:   Use same configuration — update server name in HTML
+```
 
-1. Navigate: **Monitoring > Alerting > Notification Channels**
-2. Click **+ ADD NEW**
-3. Select Email
-4. Display Name: `DevOps Team Email`
-5. Email Address: `devops-team@company.com`
-6. Click **SAVE**
+#### Instance 3: `prod-web-app-03`
 
-### Step 2: Slack Integration
+```
+Name:   prod-web-app-03
+Zone:   us-central1-c
+Note:   Use same configuration — update server name in HTML
+```
 
-**Create a Slack App:**
+---
 
-1. Go to: https://api.slack.com/apps
-2. Click **Create New App**
-3. Name: `GCP Monitoring Alerts`
-4. Workspace: Select your workspace
-5. Click **Create App**
+### 3.2 Create Custom Image *(For Scalability)*
 
-**Incoming Webhook:**
+> **Why:** Creating a custom image ensures consistent deployments.
 
-1. Click **Incoming Webhooks** in left menu
-2. Toggle **Activate Incoming Webhooks**
-3. Click **Add New Webhook to Workspace**
-4. Choose channel (e.g., `#alerts`)
-5. Copy the Webhook URL
+1. Stop one instance: `prod-web-app-01`
+2. Navigate to **Compute Engine → Images**
+3. Click **Create Image**:
+   - **Name:** `prod-web-image-v1`
+   - **Source:** `prod-web-app-01`
+   - **Family:** `prod-web-server`
+4. Click **Create**
 
-**Configure GCP:**
+---
 
-1. Back in GCP: Notification Channels
-2. Select Webhook
-3. Display Name: `Slack Alerts`
-4. Endpoint URL: Paste the webhook URL
-5. Click **SAVE**
+## Step 4: Network Infrastructure (Load Balancer Components)
 
-### Step 3: PagerDuty Integration (Optional)
+### 4.1 Reserve Static External IP
 
-In Notification Channels:
+> **Why:** Production needs a fixed IP for DNS and firewall whitelisting.
 
-1. Select PagerDuty
-2. Display Name: `PagerDuty - OnCall`
-3. Service API Key: Enter your PagerDuty integration key
-4. Click **SAVE**
+**Console Steps:**
 
-### Step 4: Assign Channels to Alerts
+1. Navigate to **VPC Network → IP Addresses**
+2. Click **Reserve External IP Address**
 
-For each alert policy:
+```
+Name:        prod-nlb-ip
+Description: Production NLB static IP
+Region:      us-central1
+Type:        Regional
+Attached to: None
+```
 
-1. Edit the policy
-2. Under Notifications:
-   - Add all desired channels (Email, Slack, PagerDuty)
-   - For Slack, you can mention specific users: `@here` or `@channel`
+3. Click **Reserve**
 
-### Example Slack Message Format
+> 📝 **Record the IP:** `34.123.45.67` *(example)*
+
+---
+
+### 4.2 Create Internal DNS Entry *(Optional)*
+
+1. Navigate to **Cloud DNS → Zones**
+2. Create a DNS entry:
+   ```
+   prod-app.example.com → prod-nlb-ip
+   ```
+
+---
+
+### 4.3 Create Health Check (Advanced Configuration)
+
+**Console Steps:**
+
+1. Navigate to **Compute Engine → Health Checks**
+2. Click **Create Health Check**
+
+```
+Name:                prod-health-check
+Description:         Production health check with advanced monitoring
+Protocol:            HTTP
+Port:                80
+Request path:        /health/check
+Check interval:      30 seconds
+Timeout:             5 seconds
+Unhealthy threshold: 3
+Healthy threshold:   2
+Logging:             Enabled
+```
+
+**Why Advanced Health Check:**
+
+- Custom path `/health/check` ensures application is fully functional
+- Logging helps diagnose health issues
+- Balanced thresholds prevent flapping
+
+---
+
+## Step 5: Load Balancer Backend Configuration
+
+### 5.1 Create Target Pool
+
+**Console Steps:**
+
+1. Navigate to **Compute Engine → Target Pools**
+2. Click **Create Target Pool**
+
+```
+Name:             prod-web-pool
+Description:      Production web server target pool
+Region:           us-central1
+Session affinity: NONE
+Protocol:         TCP
+Load balancing:   External
+Health Check:     prod-health-check
+```
+
+**Instances — Add all three:**
+
+- `prod-web-app-01` (us-central1-a)
+- `prod-web-app-02` (us-central1-b)
+- `prod-web-app-03` (us-central1-c)
+
+3. Click **Create**
+
+---
+
+### 5.2 Create Backup Pool *(Disaster Recovery)*
+
+> **Why:** Ensures high availability even if primary pool fails.
+
+1. Navigate to **Compute Engine → Target Pools**
+2. Click **Create Target Pool**:
+   - **Name:** `prod-web-backup-pool`
+   - **Region:** `us-central1`
+   - **Session affinity:** NONE
+3. Add instances from different zones
+4. This pool will be used as fallback
+
+---
+
+## Step 6: Forwarding Rule (Activate Load Balancer)
+
+### 6.1 Create Primary Forwarding Rule
+
+#### Method A: From IP Address
+
+1. Navigate to **VPC Network → IP Addresses**
+2. Click on `prod-nlb-ip`
+3. Click **Create Forwarding Rule**
+
+```
+Name:        prod-nlb-forwarding-rule
+Description: Production NLB forwarding rule
+Region:      us-central1
+IP:          prod-nlb-ip (selected)
+Protocol:    TCP
+Port:        80
+Target:      Target pool
+Target Pool: prod-web-pool
+```
+
+4. Click **Create**
+
+#### Method B: From Load Balancing
+
+1. Navigate to **Network Services → Load Balancing**
+2. Click **Create Load Balancer**
+3. Select **Network Load Balancer (TCP/SSL)**
+4. Click **Start Configuration**
+5. Select **From Internet → Continue**
+6. Configure:
+
+```
+Name:      prod-nlb
+IP Address: prod-nlb-ip
+Port:       80
+Backend:    prod-web-pool
+```
+
+7. Click **Create**
+
+---
+
+### 6.2 Create Backup Forwarding Rule *(Disaster Recovery)*
+
+```
+Name:    prod-nlb-backup-rule
+IP:      Same static IP
+Port:    8080
+Target:  prod-web-backup-pool
+```
+
+---
+
+## Step 7: Monitoring & Observability
+
+### 7.1 Create Monitoring Dashboard
+
+**Console Steps:**
+
+1. Navigate to **Monitoring → Dashboards**
+2. Click **Create Dashboard**
+3. **Name:** `Production NLB Dashboard`
+4. Add the following widgets:
+
+#### Widget 1: Load Balancer Traffic
+
+```
+Metric:     loadbalancing.googleapis.com/https/request_count
+Filters:    forwarding_rule_name="prod-nlb-forwarding-rule"
+Chart type: Line chart
+```
+
+#### Widget 2: Instance CPU
+
+```
+Metric:     compute.googleapis.com/instance/cpu/utilization
+Filters:    instance_name=~"prod-web-app-.*"
+Chart type: Line chart
+```
+
+#### Widget 3: Instance Health
+
+```
+Metric:     compute.googleapis.com/instance/health_check/status
+Filters:    instance_name=~"prod-web-app-.*"
+Chart type: Table
+```
+
+#### Widget 4: HTTP Error Rates
+
+```
+Metric:     loadbalancing.googleapis.com/https/response_code_count
+Filters:    response_code=~"5.*"
+Chart type: Pie chart
+```
+
+---
+
+### 7.2 Set Up Alerting Policies
+
+#### Alert 1: High CPU Usage
+
+```
+Condition:     CPU > 80% for 5 minutes
+Severity:      Critical
+Notification:  Email, Slack, PagerDuty
+```
+
+#### Alert 2: Instance Unhealthy
+
+```
+Condition:     Health check status = UNHEALTHY
+Severity:      Critical
+Notification:  Email, Slack, PagerDuty
+```
+
+#### Alert 3: High Error Rate
+
+```
+Condition:     5xx errors > 5% for 5 minutes
+Severity:      Warning
+Notification:  Email, Slack
+```
+
+**Console Steps to Create Alerts:**
+
+1. Navigate to **Monitoring → Alerting**
+2. Click **Create Policy**
+3. Configure conditions and notification channels
+
+---
+
+## Step 8: Logging & Audit
+
+### 8.1 Enable Cloud Logging
+
+**Console Steps:**
+
+1. Navigate to **Logging → Logs Explorer**
+2. Create the following saved queries:
+
+#### Query 1: Apache Access Logs
+
+```sql
+resource.type="gce_instance"
+resource.labels.instance_id=~"prod-web-app-.*"
+logName="projects/PROJECT_ID/logs/apache2-access.log"
+```
+
+#### Query 2: Error Logs
+
+```sql
+resource.type="gce_instance"
+resource.labels.instance_id=~"prod-web-app-.*"
+severity="ERROR"
+```
+
+#### Query 3: Load Balancer Logs
+
+```sql
+resource.type="http_load_balancer"
+resource.labels.forwarding_rule_name="prod-nlb-forwarding-rule"
+```
+
+---
+
+### 8.2 Create Log Sinks *(For Compliance)*
+
+1. Navigate to **Logging → Logs Router**
+2. Create Sink:
+   - **Name:** `prod-log-sink`
+   - **Destination:** Cloud Storage bucket *(30-day retention)*
+   - **Filter:** `resource.type="gce_instance" OR resource.type="http_load_balancer"`
+
+---
+
+## Step 9: Verification & Testing
+
+### 9.1 Health Check Verification
+
+**Console:**
+
+1. Navigate to **Compute Engine → Health Checks**
+2. Click `prod-health-check`
+3. Verify all instances show ✅ **Healthy** status
+
+---
+
+### 9.2 Instance Accessibility Test
+
+From **Cloud Shell:**
+
+```bash
+# Test individual instances
+for i in 01 02 03; do
+  IP=$(gcloud compute instances describe prod-web-app-$i \
+    --zone=us-central1-a --format="get(networkInterfaces[0].accessConfigs[0].natIP)")
+  echo "Testing prod-web-app-$i: $IP"
+  curl -s http://$IP | grep -i "web server"
+done
+```
+
+---
+
+### 9.3 Load Balancer Test
+
+```bash
+# Get Load Balancer IP
+LB_IP=$(gcloud compute addresses describe prod-nlb-ip \
+  --region=us-central1 --format="get(address)")
+
+# Test load balancing (20 requests)
+echo "Testing Load Balancer at $LB_IP"
+for i in {1..20}; do
+  echo "Request $i:"
+  curl -s http://$LB_IP | grep "Web Server:"
+  sleep 0.5
+done
+```
+
+---
+
+### 9.4 Load Testing *(Optional — for production validation)*
+
+```bash
+# Install Apache Bench
+sudo apt-get install apache2-utils -y
+
+# Run load test (1000 requests, 100 concurrent)
+ab -n 1000 -c 100 http://$LB_IP/
+```
+
+---
+
+### 9.5 Browser-Based Verification
+
+1. Open browser: `http://[LB_IP]`
+2. Press **F12 → Network Tab**
+3. Refresh **10 times**
+4. Verify requests are distributed across instances
+5. Check response headers
+
+---
+
+## Step 10: Production Security Hardening
+
+### 10.1 Enable VPC Service Controls
+
+1. Navigate to **VPC Service Controls**
+2. Create Perimeter: `prod-perimeter`
+3. Add services: Compute Engine, Cloud Storage
+4. Add resources: All production resources
+
+---
+
+### 10.2 Set Up IAM Roles
+
+1. Navigate to **IAM & Admin → IAM**
+2. Grant minimum required permissions:
+
+| Role | Permission Level |
+|---|---|
+| Developers | Compute Viewer only |
+| Ops Team | Compute Admin, Monitoring Editor |
+| Auditors | Logging Viewer only |
+
+---
+
+### 10.3 Enable Audit Logging
+
+1. Navigate to **IAM & Admin → Audit Logs**
+2. Enable audit logs for:
+   - Compute Engine
+   - Cloud Storage
+   - Cloud Monitoring
+   - Cloud Logging
+
+---
+
+## Step 11: Disaster Recovery Setup
+
+### 11.1 Create Instance Templates
+
+1. Navigate to **Compute Engine → Instance Templates**
+2. Create Template:
+
+```
+Name:       prod-web-template-v1
+Machine:    e2-standard-2
+Boot Disk:  Debian 12 (custom image)
+Labels:     environment=production
+```
+
+---
+
+### 11.2 Create Managed Instance Group *(For Auto-healing)*
+
+1. Navigate to **Compute Engine → Instance Groups**
+2. Create Instance Group:
+
+```
+Name:         prod-web-mig
+Type:         Managed
+Template:     prod-web-template-v1
+Zones:        us-central1-a, us-central1-b, us-central1-c
+Autoscaling:  Enabled
+Health Check: prod-health-check
+```
+
+---
+
+### 11.3 Set Up Backup Script
+
+```bash
+#!/bin/bash
+# prod-backup-script.sh
+
+# Backup instance configurations
+gcloud compute instances list --filter="tags.items=prod-http-tag" \
+  --format="json" > prod-instances-backup-$(date +%Y%m%d).json
+
+# Backup firewall rules
+gcloud compute firewall-rules list --format="json" > prod-firewall-backup-$(date +%Y%m%d).json
+
+# Backup target pool
+gcloud compute target-pools describe prod-web-pool \
+  --region=us-central1 --format="json" > prod-targetpool-backup-$(date +%Y%m%d).json
+```
+
+---
+
+## Step 12: Documentation & Handover
+
+### 12.1 Create Architecture Diagram
+
+**Components to Document:**
+
+```
+Internet
+  └── Static IP (prod-nlb-ip)
+        └── Forwarding Rule (prod-nlb-forwarding-rule)
+              └── Target Pool (prod-web-pool)
+                    ├── prod-web-app-01 (us-central1-a)
+                    ├── prod-web-app-02 (us-central1-b)
+                    └── prod-web-app-03 (us-central1-c)
+
+Monitoring Stack
+  ├── Cloud Monitoring Dashboard
+  ├── Alerting Policies
+  └── Cloud Logging + Log Sinks
+```
+
+---
+
+### 12.2 Create Runbooks
+
+#### Runbook: Server Failure
+
+```
+1. Instance goes down
+2. Monitoring alerts Ops team
+3. Ops checks health check
+4. If unhealthy:
+   a. SSH into instance
+   b. Check service: systemctl status apache2
+   c. Restart:       systemctl restart apache2
+   d. Verify health: curl localhost/health/check
+5. If persistent:
+   a. Create new instance from template
+   b. Add to target pool
+   c. Remove failed instance
+```
+
+---
+
+### 12.3 Create Handover Document
 
 ```markdown
-🚨 *GCP Alert: High CPU - Web App* 🚨
+# Production NLB — Handover Document
 
-*Severity:* Critical
-*Resource:* web-app-mig
-*Current CPU:* 87%
-*Time:* 2026-06-18 10:45:30 UTC
+## Infrastructure Overview
+- Environment:          Production
+- Region:               us-central1
+- Load Balancer Type:   Network Load Balancer (L4)
+- Number of Backends:   3
 
-*Action Required:*
-1. Check instances: https://console.cloud.google.com/compute/instances
-2. Review logs: https://console.cloud.google.com/logs/query
-3. Consider scaling up or investigating high CPU processes
-```
+## Access Points
+- Production URL:  http://34.123.45.67
+- DNS Name:        prod-app.example.com
 
-### Explanation
+## Credentials
+- Cloud Console:  [Provide IAM access]
+- SSH Access:     Restricted to VPN IPs
 
-- **Multiple channels**: Ensures alerts are received even if one channel fails
-- **Slack**: Provides real-time team notifications
-- **Email**: Standard delivery method
-- **PagerDuty**: 24/7 on-call rotation support
+## Monitoring
+- Dashboard:  Production NLB Dashboard
+- Alerts:     Email to ops@example.com
 
----
+## Maintenance Windows
+- Weekly:     Sunday 2AM – 4AM EST
+- Emergency:  24/7 on-call rotation
 
-## Part 8: Automation Scripts
+## Support Contacts
+- Primary:    John Doe (Ops Lead)
+- Secondary:  Jane Smith (Backup)
+- PagerDuty:  prod-nlb-oncall
 
-### Script 1: Daily Health Check (Cloud Shell)
-
-Create a script to run daily for quick health verification:
-
-```bash
-#!/bin/bash
-# File: daily_health_check.sh
-
-# Configuration
-PROJECT_ID="your-project-id"
-IP_ADDRESS="your-static-ip"
-
-echo "======================================"
-echo "DAILY PRODUCTION HEALTH CHECK"
-echo "Date: $(date)"
-echo "======================================"
-
-# Function to check service
-check_service() {
-    echo -n "Checking $1... "
-    response=$(curl -s -o /dev/null -w "%{http_code}" $2)
-    if [ $response -eq 200 ]; then
-        echo "✅ PASS (HTTP $response)"
-        return 0
-    else
-        echo "❌ FAIL (HTTP $response)"
-        return 1
-    fi
-}
-
-# Check 1: Load Balancer
-check_service "Load Balancer" "http://$IP_ADDRESS/"
-
-# Check 2: Health Endpoint
-check_service "Health Check" "http://$IP_ADDRESS/health.php"
-
-# Check 3: Instance Health
-echo -n "Checking MIG Status... "
-HEALTHY_COUNT=$(gcloud compute backend-services get-health web-app-backend \
-    --region us-central1 \
-    --format="value(healthStatus.healthy)" | wc -l)
-echo "✅ $HEALTHY_COUNT healthy instances"
-
-# Check 4: Current Instance Count
-CURRENT_COUNT=$(gcloud compute instance-groups managed list-instances web-app-mig \
-    --region us-central1 \
-    --format="value(name)" | wc -l)
-echo "📊 Active instances: $CURRENT_COUNT (Min: 2, Max: 5)"
-
-# Check 5: CPU Usage (last 5 minutes)
-echo -n "Checking CPU Usage... "
-CPU_AVG=$(gcloud monitoring time-series list \
-    --filter="metric.type=\"compute.googleapis.com/instance/cpu/utilization\" AND resource.labels.instance_group=\"web-app-mig\"" \
-    --format="value(points[0].value.doubleValue)" \
-    --limit=1 | head -1)
-CPU_PERCENT=$(echo "$CPU_AVG * 100" | bc)
-echo "📈 Average CPU: $CPU_PERCENT%"
-
-# Check 6: Recent Errors
-echo -n "Checking recent errors... "
-ERROR_COUNT=$(gcloud logging read \
-    'resource.type="http_load_balancer" AND severity>=ERROR AND timestamp > "-1h"' \
-    --format="value(severity)" | wc -l)
-if [ $ERROR_COUNT -eq 0 ]; then
-    echo "✅ No errors in last hour"
-else
-    echo "⚠️ $ERROR_COUNT errors in last hour"
-fi
-
-echo "======================================"
-echo "Health Check Complete"
-echo "======================================"
-```
-
-### Script 2: Automated MIG Status Check
-
-```bash
-#!/bin/bash
-# File: check_mig_status.sh
-
-echo "=== MIG Status Report ==="
-echo "Time: $(date)"
-echo
-
-# Get instance details
-INSTANCES=$(gcloud compute instance-groups managed list-instances web-app-mig --region us-central1 --format="json")
-
-echo "$INSTANCES" | jq -r '.[] | [.instance, .status, .instanceStatus] | @tsv' | while read instance status instanceStatus; do
-    # Get zone from instance URL
-    ZONE=$(echo $instance | cut -d/ -f9)
-    
-    # Get CPU usage
-    CPU=$(gcloud monitoring time-series list \
-        --filter="metric.type=\"compute.googleapis.com/instance/cpu/utilization\" AND resource.labels.instance_id=\"$instance\"" \
-        --format="value(points[0].value.doubleValue)" \
-        --limit=1 | head -1)
-    
-    CPU_PERCENT=$(echo "$CPU * 100" | bc 2>/dev/null || echo "N/A")
-    
-    # Check if instance is healthy
-    echo "Instance: $instance"
-    echo "  Zone: $ZONE"
-    echo "  Status: $instanceStatus"
-    echo "  CPU: $CPU_PERCENT%"
-    echo "---"
-done
-```
-
-### Script 3: Cloud Scheduler Setup
-
-To run the weekly report automatically:
-
-**Deploy Cloud Function:**
-
-```bash
-gcloud functions deploy weekly-report \
-    --runtime python39 \
-    --trigger-http \
-    --allow-unauthenticated \
-    --entry-point generate_weekly_report
-```
-
-**Create Cloud Scheduler Job:**
-
-```bash
-gcloud scheduler jobs create pubsub weekly-report-scheduler \
-    --schedule "0 9 * * 1" \
-    --topic weekly-report-topic \
-    --message-body '{"run": "weekly"}'
-```
-
-### Explanation
-
-- **Daily Health Check**: Quick verification of all system components
-- **MIG Status Check**: Detailed view of individual instance health
-- **Cloud Scheduler**: Automates periodic health checks
-- **Cloud Function**: Generates comprehensive weekly reports
-
-### Usage
-
-```bash
-# Make scripts executable
-chmod +x daily_health_check.sh
-chmod +x check_mig_status.sh
-
-# Run daily check
-./daily_health_check.sh
-
-# Check MIG status
-./check_mig_status.sh
+## Links
+- Console:     https://console.cloud.google.com
+- Monitoring:  https://console.cloud.google.com/monitoring
+- Logs:        https://console.cloud.google.com/logs
 ```
 
 ---
 
-## Part 9: Testing & Validation
+## ✅ Ultimate Production Checklist
 
-### Test 1: Simulate High CPU
+### Phase 1: Foundation *(Steps 1–2)*
 
-**Step-by-Step Instructions:**
+- [ ] Region/Zone configured
+- [ ] APIs enabled
+- [ ] Firewall rules created (HTTP, HTTPS, SSH, Health Check)
+- [ ] Network isolation configured
 
-SSH into one instance:
+### Phase 2: Compute *(Step 3)*
 
-```bash
-INSTANCE_NAME=$(gcloud compute instance-groups managed list-instances web-app-mig --region us-central1 --format="value(name)" | head -1)
-gcloud compute ssh $INSTANCE_NAME --zone us-central1-a
-```
+- [ ] All 3 instances created with enhanced startup scripts
+- [ ] Custom image created
+- [ ] Deletion protection enabled
+- [ ] Labels and tags applied
 
-Inside instance, stress CPU:
+### Phase 3: Network *(Steps 4–5)*
 
-```bash
-sudo apt-get install stress -y
-stress --cpu 4 --timeout 300
-```
+- [ ] Static IP reserved and documented
+- [ ] Health check configured
+- [ ] Target pool created
+- [ ] All instances added to pool
 
-**Expected**: CPU alert should trigger within 5 minutes
+### Phase 4: Activation *(Step 6)*
 
-### Test 2: Simulate Instance Failure
+- [ ] Forwarding rule created
+- [ ] Load balancer tested
+- [ ] DNS configured *(if applicable)*
 
-```bash
-# Stop an instance
-INSTANCE_NAME=$(gcloud compute instance-groups managed list-instances web-app-mig --region us-central1 --format="value(name)" | head -1)
-gcloud compute instance-groups managed delete-instances web-app-mig --instances=$INSTANCE_NAME --region us-central1
+### Phase 5: Observability *(Steps 7–8)*
 
-# Monitor recreation
-gcloud compute instance-groups managed list-instances web-app-mig --region us-central1
-```
+- [ ] Monitoring dashboard created
+- [ ] Alerting policies configured
+- [ ] Logging enabled
+- [ ] Audit logs active
 
-**Expected**: Instance gets recreated within 2 minutes
+### Phase 6: Security *(Step 10)*
 
-### Test 3: Test Uptime Check
+- [ ] VPC Service Controls enabled
+- [ ] IAM roles restricted
+- [ ] SSH access restricted
+- [ ] Audit logging enabled
 
-```bash
-# Temporarily block port 80 (warning: affects all instances)
-# SSH into one instance
-sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+### Phase 7: Resilience *(Step 11)*
 
-# Wait 3 minutes, check uptime check status
-# Should show UNHEALTHY
+- [ ] Backup pool configured
+- [ ] Instance templates created
+- [ ] Disaster recovery plan documented
+- [ ] Backup scripts in place
 
-# Restore
-sudo iptables -D INPUT -p tcp --dport 80 -j DROP
-```
+### Phase 8: Documentation *(Step 12)*
 
-**Expected**: Uptime check shows UNHEALTHY, then HEALTHY after restoration
-
-### Test 4: Generate 5xx Errors
-
-```bash
-# SSH into an instance
-sudo systemctl stop apache2
-
-# Send requests
-for i in {1..10}; do
-    curl http://YOUR_STATIC_IP/
-done
-
-# Start Apache again
-sudo systemctl start apache2
-```
-
-**Expected**: 5xx error alerts should trigger
-
-### Test 5: Test Session Affinity
-
-```bash
-# Send multiple requests with same IP
-for i in {1..5}; do
-    curl -s http://YOUR_STATIC_IP/ | grep "Server:"
-    sleep 1
-done
-```
-
-**Expected**: Should see same hostname for all requests
-
-### Test 6: Test Auto-Scaling
-
-```bash
-# Generate high load across all instances
-for INSTANCE in $(gcloud compute instance-groups managed list-instances web-app-mig --region us-central1 --format="value(name)"); do
-    gcloud compute ssh $INSTANCE --zone us-central1-a --command="sudo apt-get install stress -y && stress --cpu 4 --timeout 600" &
-done
-
-# Monitor MIG size
-watch -n 10 'gcloud compute instance-groups managed describe web-app-mig --region us-central1 --format="value(currentSize)"'
-```
-
-**Expected**: MIG should scale from 2 to 5 instances
-
-### Explanation
-
-- **Stress testing**: Simulates production load to test auto-scaling
-- **Failure simulation**: Tests auto-healing capabilities
-- **Session testing**: Verifies sticky sessions work correctly
-- **Uptime testing**: Validates monitoring and alerting
+- [ ] Architecture diagram created
+- [ ] Runbooks written
+- [ ] Handover document prepared
+- [ ] Knowledge base updated
 
 ---
 
-## Part 10: Troubleshooting Guide
+## 💰 Cost Optimization Tips
 
-### Common Issues and Solutions
+### 1. Right-Size Instances
 
-#### Issue 1: Alerts Not Triggering
+- Monitor CPU/Memory usage for 30 days
+- Adjust machine types if over-provisioned
+- Use committed use discounts for 1–3 year commitments
 
-**Symptoms**: Alerts configured but not firing
+### 2. Network Optimization
 
-**Solutions**:
+- Use standard tier where latency isn't critical
+- Enable CDN for static content
+- Compress responses
 
-1. Verify data is flowing:
+### 3. Monitoring Cost Management
 
-```bash
-gcloud monitoring time-series list \
-    --filter="metric.type=\"compute.googleapis.com/instance/cpu/utilization\"" \
-    --limit=5
-```
-
-2. Check alert conditions:
-   - Ensure filters match exactly
-   - Verify threshold is reasonable
-   - Check that duration is not too long
-3. Test with forced trigger:
-   - Temporarily lower threshold to 1%
-   - Should trigger immediately
-
-#### Issue 2: Dashboard Not Showing Data
-
-**Symptoms**: Empty widgets or "No Data"
-
-**Solutions**:
-
-1. Check time range (set to 1 hour)
-2. Verify filters match resource names
-3. Ensure Monitoring API is enabled
-4. Check if metrics are being emitted:
-
-```bash
-gcloud monitoring metrics list \
-    --filter="metric.type=\"compute.googleapis.com/\"" \
-    --limit=10
-```
-
-#### Issue 3: Logs Not Appearing
-
-**Symptoms**: Logs Explorer shows no logs
-
-**Solutions**:
-
-1. Verify logging is enabled on backend service
-2. Check sample rate (should be 1.0)
-3. Check time range
-4. Check resource filter:
-
-```text
-resource.type="http_load_balancer"
-```
-
-#### Issue 4: Uptime Check Failing
-
-**Symptoms**: Uptime check shows unhealthy
-
-**Solutions**:
-
-1. Check health endpoint manually:
-
-```bash
-curl http://YOUR_STATIC_IP/health
-```
-
-2. Verify firewall rule allows traffic from Google IPs
-3. Check if instances are healthy:
-
-```bash
-gcloud compute backend-services get-health web-app-backend --region us-central1
-```
-
-4. Verify load balancer is responding:
-
-```bash
-curl -I http://YOUR_STATIC_IP/
-```
-
-#### Issue 5: Notifications Not Receiving
-
-**Symptoms**: Not getting email/Slack alerts
-
-**Solutions**:
-
-1. Check notification channel is added to alert
-2. Verify email address or webhook URL
-3. Check spam folder for email
-4. For Slack, verify webhook URL is correct
-5. Test notification:
-
-```bash
-# For email, manually send test
-gcloud monitoring alert-policies describe POLICY_ID
-```
-
-### Quick Diagnostic Commands
-
-```bash
-# Check all MIG instances
-gcloud compute instance-groups managed list-instances web-app-mig --region us-central1
-
-# Check backend health
-gcloud compute backend-services get-health web-app-backend --region us-central1
-
-# Check firewall rules
-gcloud compute firewall-rules list --filter="allow-http-web-app"
-
-# View recent logs
-gcloud logging read 'resource.type="http_load_balancer" AND timestamp > "-1h"' --limit=20
-
-# Check CPU metrics
-gcloud monitoring time-series list \
-    --filter="metric.type=\"compute.googleapis.com/instance/cpu/utilization\"" \
-    --format="value(points[0].value.doubleValue)" \
-    --limit=5
-
-# Verify alert policies
-gcloud monitoring alert-policies list
-```
-
-### Performance Tuning Recommendations
-
-| Component | Recommendation |
-|---|---|
-| CPU Threshold | Start at 70%, adjust based on workload patterns |
-| Auto-scaling | Consider custom metrics if CPU doesn't reflect load |
-| Log Sample Rate | Keep at 1.0 for production, reduce to 0.5 for dev |
-| Uptime Check Frequency | 1 minute is good, can increase to 30 seconds |
-| Alert Cooldowns | Set 5-minute cooldown to prevent alert fatigue |
-| Dashboard Refresh | 1-minute auto-refresh for real-time monitoring |
-
-### Monitoring Checklist
-
-- [ ] All required APIs enabled
-- [ ] 4+ alert policies configured
-- [ ] 8+ dashboard widgets created
-- [ ] Log-based metrics configured
-- [ ] Uptime checks configured from 3+ regions
-- [ ] Notification channels set (Email + Slack)
-- [ ] Custom health endpoint deployed
-- [ ] Health checks updated
-- [ ] Weekly report automated
-- [ ] All tests performed and validated
+- Set log retention to 30 days (not indefinite)
+- Limit metrics sampling rate
+- Use metrics filters to reduce ingestion
 
 ---
 
-## Deliverables
+## 🔧 Advanced Production Features *(Optional)*
 
-### Required Screenshots
+### SSL/TLS Termination
 
-**1. Load Balancer Dashboard**
+```bash
+# Create SSL certificate
+gcloud compute ssl-certificates create prod-ssl-cert \
+  --domains=prod-app.example.com \
+  --global
 
-Screenshot showing the backend service health as Healthy:
+# Update load balancer to use HTTPS
+gcloud compute target-pools create prod-https-pool \
+  --region=us-central1 \
+  --http-health-check=prod-health-check
+```
 
-1. Navigate to **Network Services > Load Balancing**
-2. Click on `web-app-backend`
-3. Capture the entire page showing backend status
+### WAF Integration (Cloud Armor)
 
-**2. Frontend IP and Web Page**
+```bash
+# Create security policy
+gcloud compute security-policies create prod-waf-policy
 
-Screenshot showing:
+# Attach to load balancer
+gcloud compute backend-services update prod-web-pool \
+  --security-policy=prod-waf-policy
+```
 
-- The frontend IP address from the load balancer
-- Browser displaying the web page (showing hostname)
+### Auto-scaling Configuration
 
-**3. Logs Explorer**
-
-Screenshot showing:
-
-- Logs Explorer with load balancer access logs
-- The query used
-- At least 10-20 log entries visible
-
-**4. Monitoring Dashboard**
-
-Screenshot showing:
-
-- The complete monitoring dashboard
-- All widgets with real data
-- Time range showing recent activity
-
-**5. Alerting Policies**
-
-Screenshot showing:
-
-- All configured alert policies
-- Status (Enabled)
-
-**6. Slack/Email Notification**
-
-Screenshot of received alert notification
-
-### Submission Checklist
-
-| Deliverable | Status |
-|---|---|
-| Load Balancer Dashboard (Healthy) | [ ] |
-| Frontend IP and Browser Display | [ ] |
-| Logs Explorer Access Logs | [ ] |
-| Monitoring Dashboard | [ ] |
-| Alerting Policies | [ ] |
-| Notification Example | [ ] |
+```bash
+# Create autoscaler
+gcloud compute instance-groups managed set-autoscaling \
+  prod-web-mig \
+  --max-num-replicas=10 \
+  --min-num-replicas=3 \
+  --target-cpu-utilization=0.75 \
+  --cool-down-period=60
+```
 
 ---
 
-### Why This is Production-Ready
+## 🎉 Congratulations!
 
-- ✅ **High Availability**: Instances spread across multiple zones
-- ✅ **Auto-Scaling**: Handles traffic spikes automatically
-- ✅ **Auto-Healing**: Unhealthy instances are replaced automatically
-- ✅ **Session Stickiness**: Preserves user sessions
-- ✅ **Monitoring**: Logs and dashboards for troubleshooting
-- ✅ **Static IP**: Stable endpoint for DNS configuration
-- ✅ **Alerts**: Proactive notification of issues
-- ✅ **Security**: Proper firewall and network configuration
+You've successfully set up a production-grade Network Load Balancer with:
 
----
+- ✅ Enterprise-level security
+- ✅ Comprehensive monitoring
+- ✅ Disaster recovery capabilities
+- ✅ Detailed documentation
+- ✅ Production best practices
 
-## Next Challenge (Optional)
-
-If you want to go further:
-
-1. **Add SSL Termination**: Configure HTTPS using a self-signed certificate or Cloud Certificate Manager
-2. **Custom Health Endpoint**: Create a health endpoint that verifies database connectivity and other dependencies
-3. **Advanced Monitoring**: Set up Cloud Monitoring Alerts for custom metrics
-4. **CI/CD Integration**: Implement blue-green deployments using Cloud Build
-5. **Disaster Recovery**: Configure cross-region failover
+Your production environment is now **robust, scalable, and ready to handle real-world traffic!**
 
 ---
 
-**End of Guide**
-
-> **Note**: This comprehensive guide provides everything needed to deploy, monitor, and maintain a production-ready web application on Google Cloud Platform. All commands, configurations, and procedures have been tested and validated for production use.
+> ⚠️ *This guide is AI-generated, for reference only. Always validate configurations against your organization's specific requirements and GCP's latest documentation.*
